@@ -1,0 +1,694 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DEARLY — 관계의 변천사</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css">
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Gowun+Batang:wght@400;700&family=Gaegu:wght@400;700&family=Gamja+Flower&family=Nanum+Pen+Script&family=Single+Day&family=Nanum+Myeongjo:wght@400;700&family=Hahmlet:wght@400;700&display=swap');
+:root{
+  --bg:#fff7fa;--panel:#ffffffcc;--card:#fffdfd;--accent:#d78ca6;--accent-soft:#f4d7e2;--line:#efd3de;--ink:#4d3f46;--muted:#8e7480;
+  --sheet-bg:#fffafc;--pattern:none;--pattern-color:#e7bfd0;--pattern-size:22px;--title-font:'Gowun Batang',serif;--body-font:'Pretendard Variable','Pretendard','Gowun Dodum',sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:
+radial-gradient(circle at top left,#fff 0,#fff7fa 30%,#fbf2f7 100%);
+color:var(--ink);font-family:var(--body-font)}
+button,input,select,textarea{font:inherit}
+body{min-height:100vh}
+.wrap{max-width:1400px;margin:0 auto;padding:24px}
+.hero{text-align:center;margin-bottom:22px}
+.hero small{display:block;font-size:11px;letter-spacing:.28em;color:var(--muted);margin-bottom:8px}
+.hero h1{font-family:var(--title-font);font-size:40px;margin:0;color:#6d4658}
+.hero p{margin:8px 0 0;color:var(--muted)}
+.layout{display:grid;grid-template-columns:420px minmax(0,1fr);gap:20px;align-items:start}
+.panel,.sheetWrap{background:var(--panel);backdrop-filter:blur(18px);border:1px solid #ffffffb0;box-shadow:0 18px 40px #9e6e831f,0 2px 8px #92627712;border-radius:26px}
+.panel{padding:20px;position:sticky;top:16px;max-height:calc(100vh - 32px);overflow:auto}
+.section{padding:16px 0;border-bottom:1px dashed var(--line)}
+.section:first-child{padding-top:0}
+.section:last-child{border-bottom:0;padding-bottom:0}
+.section h3{margin:0 0 12px;font-size:18px;color:#9a5d77;font-family:var(--title-font)}
+.subhead{margin:0 0 10px;font-size:13px;color:var(--muted);font-weight:700}
+.row,.pair,.triple,.quad{display:grid;gap:10px}
+.pair{grid-template-columns:1fr 1fr}.triple{grid-template-columns:1fr 1fr 1fr}.quad{grid-template-columns:repeat(4,1fr)}
+label{display:block;font-size:12px;color:var(--muted);margin:0 0 5px;font-weight:700}
+input[type=text],input[type=number],textarea,select,input[type=color]{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:14px;background:#fffdfd;color:var(--ink);outline:none;transition:.18s}
+input[type=color]{padding:4px;height:44px}
+textarea{resize:vertical;min-height:74px}
+input:focus,textarea:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 4px #f5dfe7}
+.filebtn{display:flex;align-items:center;justify-content:center;min-height:44px;padding:10px 12px;border:1px dashed var(--line);border-radius:14px;background:#fffdfd;color:var(--muted);cursor:pointer;text-align:center}
+.filebtn:hover{border-color:var(--accent);color:#8a5970}
+input[type=file]{display:none}
+.filemeta{margin-top:6px;font-size:11px;color:var(--muted);word-break:break-all}
+.rangeRow{display:grid;grid-template-columns:90px minmax(0,1fr) 58px;gap:8px;align-items:center;margin-bottom:8px}
+.rangeRow .metricName{font-size:12px;font-weight:700;color:#755867}
+.rangeRow input[type=range]{accent-color:var(--accent)}
+.rangeRow input[type=number]{padding:7px 6px;text-align:center}
+button{border:0;border-radius:14px;padding:12px 14px;background:linear-gradient(180deg,#efafc4,#d985a5);color:#fff;font-weight:800;cursor:pointer;box-shadow:0 10px 20px #d388a31f;transition:.18s}
+button:hover{transform:translateY(-1px)}
+button.alt{background:#f7e2ea;color:#8a5970;box-shadow:none}
+button.ghost{background:#fff;border:1px solid var(--line);color:#8a5970;box-shadow:none}
+button.sm{padding:8px 10px;border-radius:12px;font-size:12px}
+.eventEditor{border:1px solid var(--line);border-radius:18px;background:#fffdfd;padding:12px;margin-bottom:10px}
+.eventEditor summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;font-weight:800;color:#8a5970}
+.eventEditor summary::-webkit-details-marker{display:none}
+.eventBadge{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:999px;background:#faebf1;color:#a56b83;font-size:12px;margin-right:6px}
+.eventTitleWrap{display:flex;align-items:center;gap:8px}
+.miniBtns{display:flex;gap:6px}
+.eventGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.themeGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.themeChip{padding:10px;border-radius:16px;border:1px solid var(--line);background:#fff;cursor:pointer;text-align:left}
+.themeChip b{display:block;font-size:13px;color:#6f4b5d}.themeChip span{font-size:11px;color:var(--muted)}
+.themeChip.active{border-color:var(--accent);box-shadow:0 0 0 3px #f7dde6}
+.help{font-size:11px;color:var(--muted);line-height:1.55;margin-top:6px}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.previewScroll{overflow-x:auto;padding:18px}.sheetWrap{padding:10px}
+.sheet{position:relative;width:920px;min-height:1300px;margin:0 auto;background:var(--sheet-bg);color:var(--ink);border-radius:28px;padding:42px 42px 34px;border:1px solid #ffffffb0;box-shadow:0 12px 30px #98708415;overflow:hidden;font-family:var(--body-font)}
+.sheet::before{content:'';position:absolute;inset:14px;border:1px solid color-mix(in srgb,var(--accent) 34%,white);border-radius:22px;pointer-events:none}
+.sheet.pattern-grid{background-image:linear-gradient(to right,color-mix(in srgb,var(--pattern-color) 18%,transparent) 1px,transparent 1px),linear-gradient(to bottom,color-mix(in srgb,var(--pattern-color) 18%,transparent) 1px,transparent 1px);background-size:var(--pattern-size) var(--pattern-size)}
+.sheet.pattern-dot{background-image:radial-gradient(color-mix(in srgb,var(--pattern-color) 38%,transparent) 1.4px,transparent 1.6px);background-size:var(--pattern-size) var(--pattern-size)}
+.sheet.pattern-line{background-image:repeating-linear-gradient(0deg,transparent 0 calc(var(--pattern-size) - 2px),color-mix(in srgb,var(--pattern-color) 20%,transparent) calc(var(--pattern-size) - 1px) var(--pattern-size))}
+.sheet.pattern-check{background-image:linear-gradient(90deg,color-mix(in srgb,var(--pattern-color) 14%,transparent) 50%,transparent 50%),linear-gradient(color-mix(in srgb,var(--pattern-color) 14%,transparent) 50%,transparent 50%);background-size:var(--pattern-size) var(--pattern-size)}
+.sheet.pattern-gingham{background-image:linear-gradient(90deg,color-mix(in srgb,var(--pattern-color) 14%,transparent) 50%,transparent 50%),linear-gradient(color-mix(in srgb,var(--pattern-color) 14%,transparent) 50%,transparent 50%);background-size:var(--pattern-size) var(--pattern-size);background-blend-mode:multiply}
+.sheet.pattern-star{background-image:radial-gradient(circle,var(--pattern-color) 1px,transparent 2px),radial-gradient(circle,var(--pattern-color) 1px,transparent 2px);background-position:0 0,calc(var(--pattern-size)/2) calc(var(--pattern-size)/2);background-size:var(--pattern-size) var(--pattern-size)}
+.sheet.pattern-paper{background-image:repeating-linear-gradient(0deg,transparent 0 2px,color-mix(in srgb,var(--pattern-color) 7%,transparent) 3px 4px),repeating-linear-gradient(90deg,transparent 0 5px,color-mix(in srgb,var(--pattern-color) 5%,transparent) 6px 7px)}
+.sheetHeader{text-align:center;padding-bottom:18px;border-bottom:1px solid color-mix(in srgb,var(--accent) 30%,white)}
+.sheetKicker{font-size:11px;letter-spacing:.28em;color:var(--muted);font-weight:700}
+.sheetTitle{font-family:var(--title-font);font-size:36px;line-height:1.12;margin:8px 0 4px;color:#654756}
+.sheetSubtitle{font-size:14px;color:#866976}
+.profileBand{display:grid;grid-template-columns:1fr 96px 1fr;gap:16px;align-items:start;margin:28px 0 22px}
+.profile{text-align:center}
+.portrait{position:relative;width:146px;height:146px;margin:0 auto 12px;border-radius:28px;border:1px solid color-mix(in srgb,var(--accent) 32%,white);background:#fff;box-shadow:0 14px 26px #9b6c8318, inset 0 0 0 7px #fff;overflow:hidden}
+.portrait .inner{position:absolute;inset:0;background:#f4eef1 center/cover no-repeat}
+.portrait.circle{border-radius:50%}.portrait.rounded{border-radius:28px}.portrait.square{border-radius:12px}.portrait.arch{border-radius:80px 80px 16px 16px}.portrait.ticket{clip-path:polygon(0 0,100% 0,100% 38%,95% 50%,100% 62%,100% 100%,0 100%,0 62%,5% 50%,0 38%);border-radius:0}.portrait.hexagon{clip-path:polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%);border-radius:0}.portrait.polaroid{border-radius:6px;padding:8px;border:10px solid #fff;border-bottom-width:24px;box-shadow:0 10px 22px #00000015}.portrait.polaroid .inner{inset:0}
+.profileName{font-family:var(--title-font);font-size:24px;color:#654756}
+.profileRole{font-size:12px;color:var(--muted)}
+.centerMark{display:flex;align-items:center;justify-content:center;min-height:146px;font-family:var(--title-font);font-size:40px;color:var(--accent);text-align:center;word-break:break-word;padding:10px}
+.metaRibbon{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.metaPill{padding:9px 14px;border-radius:999px;background:color-mix(in srgb,var(--accent) 10%,white);border:1px solid color-mix(in srgb,var(--accent) 20%,white);font-size:12px;color:#705361}
+.quote{margin:12px auto 0;max-width:640px;background:#fff; border:1px solid color-mix(in srgb,var(--accent) 16%,white);border-radius:16px;padding:14px 16px;font-size:14px;line-height:1.7;color:#6a5460;box-shadow:inset 0 1px 0 #fff}
+.panelCard{background:linear-gradient(180deg,#ffffffec,#fff9fbf7);border:1px solid color-mix(in srgb,var(--accent) 18%,white);border-radius:22px;padding:20px;margin-top:18px}
+.panelCard h4{margin:0 0 14px;font-family:var(--title-font);font-size:20px;color:#8f5973}
+.graphHead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}.dot{width:10px;height:10px;border-radius:999px;display:inline-block}
+.graphCanvas{width:100%;height:260px;border-radius:18px;background:linear-gradient(180deg,#fff,#fff8fb);border:1px solid color-mix(in srgb,var(--accent) 16%,white)}
+.timelineTitle{display:flex;justify-content:space-between;align-items:end;gap:10px;margin-bottom:12px}
+.timelineTitle b{font-family:var(--title-font);font-size:20px;color:#8f5973}.timelineTitle span{font-size:12px;color:var(--muted)}
+.timeline{position:relative;display:grid;gap:18px;padding-left:16px}
+.timeline::before{content:'';position:absolute;left:19px;top:8px;bottom:8px;width:2px;background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 55%,white),color-mix(in srgb,var(--accent) 15%,white))}
+.eventItem{position:relative;display:grid;grid-template-columns:34px 1fr;gap:12px;align-items:start}
+.node{position:relative;width:40px}.node::before{content:'';position:absolute;left:-1px;top:10px;width:12px;height:12px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 6px color-mix(in srgb,var(--accent) 16%,white)}
+.eventCard{background:linear-gradient(180deg,#fff,#fffafc);border:1px solid color-mix(in srgb,var(--accent) 15%,white);border-radius:18px;padding:16px 16px 14px;box-shadow:0 8px 20px #9870840d}
+.eventTop{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:8px}
+.eventTop b{font-family:var(--title-font);font-size:20px;color:#6d4758}
+.eventTime{font-size:12px;color:var(--muted);padding-top:4px}
+.eventDesc{font-size:13px;line-height:1.7;color:#5d4b54;white-space:pre-wrap}
+.eventMood{margin-top:10px;padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--accent) 8%,white);font-size:12px;color:#705361}
+.metricBars{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.metricCol{padding:10px;border-radius:14px;background:#fff;border:1px solid color-mix(in srgb,var(--accent) 12%,white)}
+.metricCol h5{margin:0 0 7px;font-size:12px;color:#8f5973}
+.smallMeter{display:grid;grid-template-columns:56px 1fr 28px;gap:8px;align-items:center;margin-bottom:6px;font-size:11px}
+.track{height:7px;border-radius:999px;background:#f3e3e9;overflow:hidden}.fill{height:100%;border-radius:999px}.aFill{background:linear-gradient(90deg,#ebb2c5,#d97d9c)}.bFill{background:linear-gradient(90deg,#a7d2ef,#6aa8d4)}
+.summaryGrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px}
+.summaryBox{padding:16px;border-radius:18px;background:linear-gradient(180deg,#fff,#fffafc);border:1px solid color-mix(in srgb,var(--accent) 15%,white)}
+.summaryBox b{display:block;margin-bottom:8px;font-size:12px;color:#926178;letter-spacing:.03em}.summaryBox div{font-family:var(--title-font);font-size:18px;color:#654756;line-height:1.5;white-space:pre-wrap}
+.footerNote{text-align:center;margin-top:20px;font-size:11px;color:#9b7e8c;letter-spacing:.18em}
+.oocBox{background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px;white-space:pre-wrap;line-height:1.7;font-size:12px;color:#5a4951;max-height:260px;overflow:auto}
+.hidden{display:none}
+.cropDialog{width:min(94vw,470px);max-height:calc(100dvh - 24px);padding:0;border:1px solid color-mix(in srgb,var(--accent) 20%,white);border-radius:24px;background:#fffdfd;box-shadow:0 20px 70px #44223244;color:var(--ink)}
+.cropDialog::backdrop{background:#2d172466}.cropBody{padding:18px 18px 10px;overflow:auto;max-height:calc(100dvh - 130px)}.cropViewport{width:min(100%,360px);aspect-ratio:1;margin:8px auto 12px;border-radius:18px;overflow:hidden;position:relative;background:#f3ebef;border:1px solid var(--line);cursor:grab;touch-action:none}.cropViewport:active{cursor:grabbing}.cropViewport img{position:absolute;max-width:none;max-height:none;pointer-events:none;user-select:none}.cropActions{display:flex;gap:8px;padding:14px 18px 18px;border-top:1px solid var(--line);background:#fffdfd}.cropActions button{flex:1}.note{font-size:12px;color:var(--muted)}
+@media(max-width:980px){.layout{grid-template-columns:1fr}.panel{position:relative;top:auto;max-height:none}.sheet{width:860px}.summaryGrid{grid-template-columns:1fr}.eventGrid{grid-template-columns:1fr}.pair,.triple,.quad,.metricBars{grid-template-columns:1fr}.profileBand{grid-template-columns:1fr;gap:12px}.centerMark{min-height:20px;font-size:24px}.actions{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero">
+    <small>DEARLY RELATIONSHIP TEMPLATE</small>
+    <h1>관계의 변천사</h1>
+    <p>처음부터 지금까지, 두 사람이 어떤 사건을 지나 서로를 어떻게 바라보게 되었는지 기록하는 타임라인 제작기.</p>
+  </div>
+  <div class="layout">
+    <aside class="panel">
+      <section class="section">
+        <h3>01. 기본 정보</h3>
+        <div class="pair">
+          <div><label for="aName">A 이름</label><input id="aName" type="text" value="A"></div>
+          <div><label for="bName">B 이름</label><input id="bName" type="text" value="B"></div>
+        </div>
+        <div class="pair" style="margin-top:10px">
+          <div>
+            <label>A 사진</label>
+            <label class="filebtn" for="aPhoto">사진 업로드 & 크롭</label>
+            <input id="aPhoto" type="file" accept="image/*">
+            <div id="aPhotoMeta" class="filemeta">선택된 파일 없음</div>
+          </div>
+          <div>
+            <label>B 사진</label>
+            <label class="filebtn" for="bPhoto">사진 업로드 & 크롭</label>
+            <input id="bPhoto" type="file" accept="image/*">
+            <div id="bPhotoMeta" class="filemeta">선택된 파일 없음</div>
+          </div>
+        </div>
+        <div class="pair" style="margin-top:10px">
+          <div><label for="relationType">관계 유형</label><select id="relationType"><option>자유 관계</option><option>연인</option><option>친구</option><option>파트너</option><option>동료</option><option>라이벌</option><option>적대 관계</option><option>가족 같은 사이</option></select></div>
+          <div><label for="period">함께한 기간</label><input id="period" type="text" placeholder="예: 2년 3개월" value=""></div>
+        </div>
+        <div class="pair" style="margin-top:10px">
+          <div><label for="relationLabel">관계명</label><input id="relationLabel" type="text" placeholder="예: 평생의 파트너"></div>
+          <div><label for="centerMark">가운데 기호</label><input id="centerMark" type="text" value="×" maxlength="12"></div>
+        </div>
+        <div style="margin-top:10px"><label for="mainTitle">메인 제목</label><input id="mainTitle" type="text" value="관계의 변천사"></div>
+        <div class="pair" style="margin-top:10px">
+          <div><label for="engTitle">영문 부제</label><input id="engTitle" type="text" value="The Story of Us"></div>
+          <div><label for="kicker">상단 소제목</label><input id="kicker" type="text" value="DEARLY RELATIONSHIP ARCHIVE"></div>
+        </div>
+        <div style="margin-top:10px"><label for="introText">상단 문구</label><textarea id="introText">처음에는 낯설었고, 어느 순간부터는 외면할 수 없는 존재가 되었다.</textarea></div>
+        <div style="margin-top:10px"><label for="footerText">하단 문구</label><input id="footerText" type="text" value="FROM THE FIRST MOMENT TO THE PERSON WE ARE NOW"></div>
+      </section>
+
+      <section class="section">
+        <h3>02. 꾸미기</h3>
+        <div class="subhead">테마 프리셋</div>
+        <div class="themeGrid" id="themeGrid"></div>
+        <div class="pair" style="margin-top:10px">
+          <div><label for="accent">포인트 색상</label><input id="accent" type="color" value="#d78ca6"></div>
+          <div><label for="sheetBg">배경색</label><input id="sheetBg" type="color" value="#fffafc"></div>
+        </div>
+        <div class="pair" style="margin-top:10px">
+          <div><label for="ink">글자색</label><input id="ink" type="color" value="#4d3f46"></div>
+          <div><label for="patternColor">패턴 색상</label><input id="patternColor" type="color" value="#e7bfd0"></div>
+        </div>
+        <div class="pair" style="margin-top:10px">
+          <div><label for="themeFontTitle">제목 글꼴</label><select id="themeFontTitle"></select></div>
+          <div><label for="themeFontBody">본문 글꼴</label><select id="themeFontBody"></select></div>
+        </div>
+        <div class="triple" style="margin-top:10px">
+          <div><label for="photoShape">사진 모양</label><select id="photoShape"><option value="rounded">둥근 사각형</option><option value="circle">원형</option><option value="square">정사각형</option><option value="arch">아치</option><option value="polaroid">폴라로이드</option><option value="hexagon">육각형</option><option value="ticket">티켓</option></select></div>
+          <div><label for="pattern">배경 패턴</label><select id="pattern"><option value="none">없음</option><option value="grid">격자</option><option value="dot">도트</option><option value="line">줄무늬</option><option value="check">체크</option><option value="gingham">깅엄</option><option value="star">별 점</option><option value="paper">종이 질감</option></select></div>
+          <div><label for="patternSize">패턴 크기</label><input id="patternSize" type="number" min="10" max="50" value="22"></div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h3>03. 감정/관계 항목</h3>
+        <div class="help">관계 유형에 맞게 항목 이름을 바꿔도 돼. 그래프에는 선택한 2개 항목이 표시돼.</div>
+        <div class="pair" style="margin-top:10px">
+          <div><label for="metric1">항목 1</label><input id="metric1" type="text" value="호감"></div>
+          <div><label for="metric2">항목 2</label><input id="metric2" type="text" value="신뢰"></div>
+        </div>
+        <div class="pair" style="margin-top:10px">
+          <div><label for="metric3">항목 3</label><input id="metric3" type="text" value="의존"></div>
+          <div><label for="metric4">항목 4</label><input id="metric4" type="text" value="불안"></div>
+        </div>
+        <div style="margin-top:10px"><label for="metric5">항목 5</label><input id="metric5" type="text" value="존중"></div>
+        <div class="pair" style="margin-top:10px">
+          <div><label for="graphMetricA">그래프 항목 A</label><select id="graphMetricA"></select></div>
+          <div><label for="graphMetricB">그래프 항목 B</label><select id="graphMetricB"></select></div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h3>04. 사건 타임라인</h3>
+        <div id="eventsEditor"></div>
+        <div class="actions">
+          <button id="addEventBtn" type="button" class="ghost">사건 추가</button>
+          <button id="resetEventsBtn" type="button" class="alt">기본 사건 복원</button>
+        </div>
+      </section>
+
+      <section class="section">
+        <h3>05. 요약 문장</h3>
+        <div><label for="turningPoint">관계의 전환점</label><textarea id="turningPoint">서로를 더 이상 가벼운 존재로 넘길 수 없게 된 순간.</textarea></div>
+        <div style="margin-top:10px"><label for="biggestChange">가장 크게 변한 것</label><textarea id="biggestChange">낯설고 조심스러웠던 거리감이 조금씩 신뢰로 바뀌었다.</textarea></div>
+        <div style="margin-top:10px"><label for="currentState">지금, 우리는</label><textarea id="currentState">서로를 가장 깊이 흔들 수 있는 동시에 가장 오래 곁에 남을 사람.</textarea></div>
+        <div style="margin-top:10px"><label for="futureWish">앞으로의 방향</label><textarea id="futureWish">쉽지 않은 순간이 와도, 계속 같은 편으로 남을 수 있기를 바란다.</textarea></div>
+      </section>
+
+      <section class="section">
+        <h3>06. OOC / 저장</h3>
+        <div class="actions">
+          <button id="makeOOCBtn" type="button">OOC 생성</button>
+          <button id="copyOOCBtn" type="button" class="alt">OOC 복사</button>
+          <button id="savePngBtn" type="button">PNG 저장</button>
+          <button id="saveJsonBtn" type="button" class="ghost">작업 저장</button>
+          <button id="loadJsonBtn" type="button" class="alt">작업 불러오기</button>
+          <button id="resetAllBtn" type="button" class="ghost">전체 초기화</button>
+        </div>
+        <input id="loadJsonInput" type="file" accept="application/json" class="hidden">
+        <div class="help">PNG 저장은 오른쪽 미리보기를 그대로 고화질로 저장해. 작업 저장은 JSON 파일로 내려받아 나중에 다시 불러올 수 있어.</div>
+        <div id="oocOutput" class="oocBox" style="margin-top:12px">ooc: 롤플레잉 중단. 새로운 에피소드 시작.
+아직 OOC가 생성되지 않았습니다.</div>
+      </section>
+    </aside>
+
+    <div class="sheetWrap">
+      <div class="previewScroll">
+        <div id="sheet" class="sheet">
+          <header class="sheetHeader">
+            <div class="sheetKicker" id="pvKicker">DEARLY RELATIONSHIP ARCHIVE</div>
+            <div class="sheetTitle" id="pvMainTitle">관계의 변천사</div>
+            <div class="sheetSubtitle" id="pvEngTitle">The Story of Us</div>
+          </header>
+
+          <section class="profileBand">
+            <div class="profile">
+              <div id="pvPhotoA" class="portrait rounded"><div class="inner"></div></div>
+              <div class="profileName" id="pvNameA">A</div>
+              <div class="profileRole" id="pvRoleA">A가 B에게</div>
+            </div>
+            <div class="centerMark" id="pvCenterMark">×</div>
+            <div class="profile">
+              <div id="pvPhotoB" class="portrait rounded"><div class="inner"></div></div>
+              <div class="profileName" id="pvNameB">B</div>
+              <div class="profileRole" id="pvRoleB">B가 A에게</div>
+            </div>
+          </section>
+
+          <div class="metaRibbon">
+            <span class="metaPill" id="pvRelationType">자유 관계</span>
+            <span class="metaPill" id="pvRelationLabel">관계명을 입력해 주세요</span>
+            <span class="metaPill" id="pvPeriod">함께한 기간을 입력해 주세요</span>
+          </div>
+
+          <div class="quote" id="pvIntro">처음에는 낯설었고, 어느 순간부터는 외면할 수 없는 존재가 되었다.</div>
+
+          <section class="panelCard">
+            <div class="graphHead">
+              <h4>감정 흐름 그래프</h4>
+              <div class="legend"><span><i class="dot" style="background:#d97d9c"></i><b id="legend1">호감</b> · A→B</span><span><i class="dot" style="background:#6aa8d4"></i><b id="legend2">신뢰</b> · B→A</span></div>
+            </div>
+            <canvas id="graph" class="graphCanvas" width="820" height="260"></canvas>
+          </section>
+
+          <section class="panelCard">
+            <div class="timelineTitle"><b>시간의 기록</b><span>사건을 따라 마음도 달라졌다.</span></div>
+            <div id="timeline" class="timeline"></div>
+          </section>
+
+          <section class="summaryGrid">
+            <div class="summaryBox"><b>관계의 전환점</b><div id="pvTurningPoint"></div></div>
+            <div class="summaryBox"><b>가장 크게 변한 것</b><div id="pvBiggestChange"></div></div>
+            <div class="summaryBox"><b>지금, 우리는</b><div id="pvCurrentState"></div></div>
+            <div class="summaryBox"><b>앞으로의 방향</b><div id="pvFutureWish"></div></div>
+          </section>
+
+          <div class="footerNote" id="pvFooterText">FROM THE FIRST MOMENT TO THE PERSON WE ARE NOW</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<dialog id="cropDialog" class="cropDialog">
+  <div class="cropBody">
+    <h3 style="margin:0 0 8px;font-family:var(--title-font);color:#8f5973">사진 크롭</h3>
+    <p class="note">드래그로 위치를 옮기고, 확대값을 조절한 뒤 적용해 주세요.</p>
+    <div id="cropViewport" class="cropViewport"><img id="cropImg" alt="crop"></div>
+    <label for="cropZoom">확대</label>
+    <input id="cropZoom" type="range" min="0.5" max="3" step="0.01" value="1" style="width:100%">
+  </div>
+  <div class="cropActions">
+    <button type="button" class="alt" id="cropCancel">취소</button>
+    <button type="button" id="cropApply">적용</button>
+  </div>
+</dialog>
+
+<script>
+const qs = s => document.querySelector(s);
+const qsa = s => [...document.querySelectorAll(s)];
+const fontOptions = {
+  pretendard:"'Pretendard Variable','Pretendard',sans-serif",
+  gowunDodum:"'Gowun Dodum',sans-serif",
+  gowunBatang:"'Gowun Batang',serif",
+  nanumMyeongjo:"'Nanum Myeongjo',serif",
+  hahmlet:"'Hahmlet',serif",
+  gaegu:"'Gaegu',cursive",
+  gamja:"'Gamja Flower',cursive",
+  nanumPen:"'Nanum Pen Script',cursive",
+  singleDay:"'Single Day',cursive"
+};
+const fontLabels = {
+  pretendard:"Pretendard", gowunDodum:"고운돋움", gowunBatang:"고운바탕", nanumMyeongjo:"나눔명조", hahmlet:"함렛", gaegu:"개구", gamja:"감자꽃", nanumPen:"나눔손글씨", singleDay:"싱글데이"
+};
+const themes = [
+  {id:'pink',name:'Soft Pink Archive',desc:'연핑크 아카이브',accent:'#d78ca6',bg:'#fffafc',ink:'#4d3f46',patternColor:'#e7bfd0',pattern:'grid',titleFont:'gowunBatang',bodyFont:'pretendard',photo:'rounded'},
+  {id:'cream',name:'Cream Diary',desc:'크림 다이어리',accent:'#b89372',bg:'#fffdf8',ink:'#554841',patternColor:'#dcc8b4',pattern:'paper',titleFont:'gowunBatang',bodyFont:'pretendard',photo:'arch'},
+  {id:'blue',name:'Blue Memory',desc:'푸른 기억',accent:'#7a9fc8',bg:'#f8fbff',ink:'#445260',patternColor:'#c7d9ef',pattern:'dot',titleFont:'gowunBatang',bodyFont:'pretendard',photo:'circle'},
+  {id:'mono',name:'Monochrome Story',desc:'모노크롬 스토리',accent:'#909090',bg:'#fcfcfc',ink:'#404040',patternColor:'#dddddd',pattern:'line',titleFont:'gowunBatang',bodyFont:'pretendard',photo:'square'},
+  {id:'rose',name:'Rose Letter',desc:'로즈 레터',accent:'#b87489',bg:'#fff9fb',ink:'#5a444d',patternColor:'#e7c4d0',pattern:'check',titleFont:'hahmlet',bodyFont:'pretendard',photo:'polaroid'}
+];
+let events = [];
+let cropState = {target:null, src:'', x:0, y:0, scale:1, dragging:false, startX:0, startY:0};
+let photos = {a:{src:'',x:0,y:0,scale:1,fileName:''}, b:{src:'',x:0,y:0,scale:1,fileName:''}};
+
+function hasJong(name){
+  const ch = (name || '').trim().slice(-1);
+  if(!ch) return false;
+  const code = ch.charCodeAt(0);
+  if(code < 0xAC00 || code > 0xD7A3) return false;
+  return (code - 0xAC00) % 28 !== 0;
+}
+function iga(name){ return hasJong(name) ? '이' : '가'; }
+function eunNeun(name){ return hasJong(name) ? '은' : '는'; }
+function safe(v, fallback=''){ return (v ?? '').toString().trim() || fallback; }
+function esc(s){ return (s??'').toString().replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m])); }
+
+function defaultEvents(){
+  return [
+    {name:'첫 만남', time:'시작', desc:'아직은 서로를 잘 모르지만, 확실히 기억에 남았다.', mood:'낯설지만 시선을 끄는 순간.', a:[28,12,8,20,14], b:[24,10,6,18,16]},
+    {name:'관심의 시작', time:'초기', desc:'무심히 지나칠 수 없다는 사실을 알아차리기 시작했다.', mood:'한 번 더 돌아보게 되는 감정.', a:[42,25,15,18,20], b:[35,22,11,19,21]},
+    {name:'관계의 진전', time:'중반', desc:'같은 편에 서 있거나, 함께 있는 시간이 늘어났다.', mood:'거리가 가까워지며 달라진 온도.', a:[58,48,28,17,37], b:[54,44,24,16,34]},
+    {name:'갈등 혹은 위기', time:'중반 이후', desc:'쉽지 않은 사건을 겪으며 서로의 진심이 시험대에 올랐다.', mood:'흔들렸지만 무너지지는 않은 순간.', a:[52,44,31,48,39], b:[47,40,29,45,36]},
+    {name:'전환점', time:'결정적 순간', desc:'이후의 관계를 완전히 바꿔놓은 사건이었다.', mood:'서로를 향한 정의가 바뀐 날.', a:[70,72,45,22,61], b:[68,70,42,19,58]},
+    {name:'현재', time:'지금', desc:'그 모든 순간을 지나, 지금의 관계가 되었다.', mood:'여전히 변하고 있지만 분명해진 마음.', a:[82,84,57,15,74], b:[79,81,55,13,71]}
+  ];
+}
+
+function initFonts(){
+  const opts = Object.entries(fontLabels).map(([k,v])=>`<option value="${k}">${v}</option>`).join('');
+  qs('#themeFontTitle').innerHTML = opts;
+  qs('#themeFontBody').innerHTML = opts;
+  qs('#themeFontTitle').value='gowunBatang';
+  qs('#themeFontBody').value='pretendard';
+}
+function initThemes(){
+  const grid = qs('#themeGrid');
+  grid.innerHTML = themes.map(t=>`<button type="button" class="themeChip" data-id="${t.id}"><b>${t.name}</b><span>${t.desc}</span></button>`).join('');
+  qsa('.themeChip').forEach(btn=>btn.addEventListener('click',()=>applyTheme(btn.dataset.id,true)));
+  applyTheme('pink',true);
+}
+function applyTheme(id, update=true){
+  const t = themes.find(x=>x.id===id) || themes[0];
+  qsa('.themeChip').forEach(b=>b.classList.toggle('active', b.dataset.id===id));
+  qs('#accent').value=t.accent; qs('#sheetBg').value=t.bg; qs('#ink').value=t.ink; qs('#patternColor').value=t.patternColor;
+  qs('#pattern').value=t.pattern; qs('#themeFontTitle').value=t.titleFont; qs('#themeFontBody').value=t.bodyFont; qs('#photoShape').value=t.photo;
+  if(update) updatePreview();
+}
+
+function metricNames(){ return [1,2,3,4,5].map(i=>safe(qs('#metric'+i).value,'항목'+i)); }
+function rebuildMetricSelects(){
+  const names = metricNames();
+  ['#graphMetricA','#graphMetricB'].forEach((id, idx)=>{ const sel=qs(id); const cur=sel.value || names[idx]; sel.innerHTML=names.map((n,i)=>`<option value="${n}">${n}</option>`).join(''); if(names.includes(cur)) sel.value=cur; });
+  if(!qs('#graphMetricA').value) qs('#graphMetricA').value=names[0];
+  if(!qs('#graphMetricB').value) qs('#graphMetricB').value=names[1];
+  updateEventsEditor();
+}
+
+function updateEventsEditor(){
+  const container = qs('#eventsEditor');
+  const names = metricNames();
+  container.innerHTML = '';
+  events.forEach((ev, idx)=>{
+    const details = document.createElement('details');
+    details.className='eventEditor';
+    details.open = idx < 2;
+    details.innerHTML = `
+      <summary>
+        <div class="eventTitleWrap"><span class="eventBadge">${idx+1}</span><span>${esc(ev.name || '사건 '+(idx+1))}</span></div>
+        <div class="miniBtns">
+          <button type="button" class="sm ghost" data-action="up">▲</button>
+          <button type="button" class="sm ghost" data-action="down">▼</button>
+          <button type="button" class="sm alt" data-action="delete">삭제</button>
+        </div>
+      </summary>
+      <div class="eventGrid">
+        <div><label>사건 이름</label><input type="text" data-field="name" value="${esc(ev.name)}"></div>
+        <div><label>날짜/시점</label><input type="text" data-field="time" value="${esc(ev.time)}"></div>
+      </div>
+      <div style="margin-top:10px"><label>사건 설명</label><textarea data-field="desc">${esc(ev.desc)}</textarea></div>
+      <div style="margin-top:10px"><label>감정 한 줄</label><textarea data-field="mood">${esc(ev.mood)}</textarea></div>
+      <div class="pair" style="margin-top:12px">
+        <div><div class="subhead">A → B</div><div class="metricArea a"></div></div>
+        <div><div class="subhead">B → A</div><div class="metricArea b"></div></div>
+      </div>`;
+    const metricsA = details.querySelector('.metricArea.a');
+    const metricsB = details.querySelector('.metricArea.b');
+    names.forEach((nm,mi)=>{
+      const vA = ev.a?.[mi] ?? 0; const vB = ev.b?.[mi] ?? 0;
+      metricsA.insertAdjacentHTML('beforeend', `<div class="rangeRow"><div class="metricName">${esc(nm)}</div><input type="range" min="0" max="100" value="${vA}" data-side="a" data-mi="${mi}"><input type="number" min="0" max="100" value="${vA}" data-side="a" data-mi="${mi}"></div>`);
+      metricsB.insertAdjacentHTML('beforeend', `<div class="rangeRow"><div class="metricName">${esc(nm)}</div><input type="range" min="0" max="100" value="${vB}" data-side="b" data-mi="${mi}"><input type="number" min="0" max="100" value="${vB}" data-side="b" data-mi="${mi}"></div>`);
+    });
+    details.addEventListener('input', e=>{
+      const t = e.target;
+      if(t.dataset.field){ ev[t.dataset.field]=t.value; updatePreview(); return; }
+      if(t.dataset.mi!==undefined){
+        const side = t.dataset.side, mi = +t.dataset.mi; let val = parseInt(t.value||0,10); if(isNaN(val)) val = 0; val = Math.max(0,Math.min(100,val));
+        ev[side][mi]=val;
+        details.querySelectorAll(`[data-side="${side}"][data-mi="${mi}"]`).forEach(el=>{ if(el!==t) el.value = val; });
+        updatePreview();
+      }
+    });
+    details.querySelectorAll('.miniBtns button').forEach(btn=>btn.addEventListener('click',e=>{
+      e.preventDefault(); e.stopPropagation(); const act=btn.dataset.action;
+      if(act==='up' && idx>0){ [events[idx-1],events[idx]]=[events[idx],events[idx-1]]; updateEventsEditor(); updatePreview(); }
+      if(act==='down' && idx<events.length-1){ [events[idx+1],events[idx]]=[events[idx],events[idx+1]]; updateEventsEditor(); updatePreview(); }
+      if(act==='delete' && events.length>1){ events.splice(idx,1); updateEventsEditor(); updatePreview(); }
+    }));
+    container.appendChild(details);
+  });
+}
+
+function setPortrait(el, photo){
+  const inner = el.querySelector('.inner');
+  if(photo.src){
+    inner.style.backgroundImage = `url(${photo.src})`;
+    inner.style.backgroundSize = `${photo.scale*100}% auto`;
+    inner.style.backgroundPosition = `${50 + photo.x}% ${50 + photo.y}%`;
+  }else{
+    inner.style.backgroundImage = 'linear-gradient(135deg,#f5edf1,#ebe3e7)';
+    inner.style.backgroundSize = 'cover';
+    inner.style.backgroundPosition = 'center';
+  }
+}
+
+function updatePreview(){
+  const a = safe(qs('#aName').value,'A'); const b = safe(qs('#bName').value,'B');
+  const relationType = safe(qs('#relationType').value,'자유 관계'); const relationLabel = safe(qs('#relationLabel').value,'관계명을 입력해 주세요'); const period = safe(qs('#period').value,'함께한 기간을 입력해 주세요');
+  qs('#pvKicker').textContent = safe(qs('#kicker').value,'DEARLY RELATIONSHIP ARCHIVE');
+  qs('#pvMainTitle').textContent = safe(qs('#mainTitle').value,'관계의 변천사');
+  qs('#pvEngTitle').textContent = safe(qs('#engTitle').value,'The Story of Us');
+  qs('#pvNameA').textContent = a; qs('#pvNameB').textContent = b;
+  qs('#pvRoleA').textContent = `${a}${iga(a)} ${b}에게`; qs('#pvRoleB').textContent = `${b}${iga(b)} ${a}에게`;
+  qs('#pvCenterMark').textContent = safe(qs('#centerMark').value,'×');
+  qs('#pvRelationType').textContent = relationType; qs('#pvRelationLabel').textContent = relationLabel; qs('#pvPeriod').textContent = period;
+  qs('#pvIntro').textContent = safe(qs('#introText').value,'');
+  qs('#pvTurningPoint').textContent = safe(qs('#turningPoint').value,'');
+  qs('#pvBiggestChange').textContent = safe(qs('#biggestChange').value,'');
+  qs('#pvCurrentState').textContent = safe(qs('#currentState').value,'');
+  qs('#pvFutureWish').textContent = safe(qs('#futureWish').value,'');
+  qs('#pvFooterText').textContent = safe(qs('#footerText').value,'');
+  qs('#legend1').textContent = safe(qs('#graphMetricA').value, metricNames()[0]);
+  qs('#legend2').textContent = safe(qs('#graphMetricB').value, metricNames()[1]);
+  const sheet = qs('#sheet');
+  sheet.style.setProperty('--accent', qs('#accent').value);
+  sheet.style.setProperty('--sheet-bg', qs('#sheetBg').value);
+  sheet.style.setProperty('--ink', qs('#ink').value);
+  sheet.style.setProperty('--pattern-color', qs('#patternColor').value);
+  sheet.style.setProperty('--pattern-size', (parseInt(qs('#patternSize').value||22,10))+'px');
+  sheet.style.setProperty('--title-font', fontOptions[qs('#themeFontTitle').value]);
+  sheet.style.setProperty('--body-font', fontOptions[qs('#themeFontBody').value]);
+  sheet.className = 'sheet pattern-' + qs('#pattern').value;
+  ['#pvPhotoA','#pvPhotoB'].forEach(id=>{ const el=qs(id); el.className='portrait '+qs('#photoShape').value; });
+  setPortrait(qs('#pvPhotoA'), photos.a); setPortrait(qs('#pvPhotoB'), photos.b);
+  renderTimeline(); drawGraph();
+}
+
+function renderTimeline(){
+  const metrics = metricNames();
+  const aName = safe(qs('#aName').value,'A'), bName = safe(qs('#bName').value,'B');
+  qs('#timeline').innerHTML = events.map((ev,idx)=>`
+    <div class="eventItem">
+      <div class="node"></div>
+      <div class="eventCard">
+        <div class="eventTop"><b>${esc(ev.name||('사건 '+(idx+1)))}</b><div class="eventTime">${esc(ev.time||'')}</div></div>
+        <div class="eventDesc">${esc(ev.desc||'').replace(/\n/g,'<br>')}</div>
+        <div class="eventMood">${esc(ev.mood||'')}</div>
+        <div class="metricBars">
+          <div class="metricCol"><h5>${esc(aName)} → ${esc(bName)}</h5>${metrics.map((m,mi)=>smallMeter(m,ev.a?.[mi]??0,'a')).join('')}</div>
+          <div class="metricCol"><h5>${esc(bName)} → ${esc(aName)}</h5>${metrics.map((m,mi)=>smallMeter(m,ev.b?.[mi]??0,'b')).join('')}</div>
+        </div>
+      </div>
+    </div>`).join('');
+}
+function smallMeter(label, value, side){ return `<div class="smallMeter"><span>${esc(label)}</span><div class="track"><div class="fill ${side==='a'?'aFill':'bFill'}" style="width:${value}%"></div></div><span>${value}</span></div>`; }
+
+function drawGraph(){
+  const canvas = qs('#graph'); const ctx = canvas.getContext('2d'); const w = canvas.width, h=canvas.height; ctx.clearRect(0,0,w,h);
+  const padding = {l:46,r:22,t:18,b:34};
+  const x0=padding.l, y0=padding.t, xw=w-padding.l-padding.r, yh=h-padding.t-padding.b;
+  const bg = getComputedStyle(qs('#sheet')).getPropertyValue('--sheet-bg').trim() || '#fff';
+  ctx.fillStyle = bg; ctx.fillRect(0,0,w,h);
+  ctx.strokeStyle = '#eadbe1'; ctx.lineWidth=1;
+  for(let i=0;i<=5;i++){
+    const y = y0 + yh - (yh/5)*i; ctx.beginPath(); ctx.moveTo(x0,y); ctx.lineTo(x0+xw,y); ctx.stroke();
+    ctx.fillStyle = '#9d8692'; ctx.font='11px Pretendard'; ctx.fillText(String(i*20), 10, y+4);
+  }
+  const metricAName = safe(qs('#graphMetricA').value, metricNames()[0]);
+  const metricBName = safe(qs('#graphMetricB').value, metricNames()[1]);
+  const idxA = metricNames().indexOf(metricAName); const idxB = metricNames().indexOf(metricBName);
+  const ptsA = events.map((ev,i)=>({x:x0 + (events.length===1?xw/2:(xw/(events.length-1))*i), y:y0 + yh - (yh*((ev.a?.[idxA] ?? 0)/100)), label:ev.name||('사건'+(i+1)), v:ev.a?.[idxA]??0}));
+  const ptsB = events.map((ev,i)=>({x:x0 + (events.length===1?xw/2:(xw/(events.length-1))*i), y:y0 + yh - (yh*((ev.b?.[idxB] ?? 0)/100)), label:ev.name||('사건'+(i+1)), v:ev.b?.[idxB]??0}));
+  drawLine(ctx,ptsA,'#d97d9c'); drawLine(ctx,ptsB,'#6aa8d4');
+  ptsA.forEach((p,i)=>{ ctx.fillStyle='#7d6672'; ctx.font='11px Pretendard'; ctx.textAlign='center'; ctx.fillText((events[i].name||('사건'+(i+1))).slice(0,9), p.x, h-12); });
+}
+function drawLine(ctx,pts,color){
+  if(!pts.length) return; ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y);
+  for(let i=1;i<pts.length;i++){
+    const p0=pts[i-1], p=pts[i], cx=(p0.x+p.x)/2; ctx.bezierCurveTo(cx,p0.y,cx,p.y,p.x,p.y);
+  }
+  ctx.strokeStyle=color; ctx.lineWidth=3; ctx.stroke();
+  pts.forEach(p=>{ ctx.fillStyle=color; ctx.beginPath(); ctx.arc(p.x,p.y,4.5,0,Math.PI*2); ctx.fill(); ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(p.x,p.y,2,0,Math.PI*2); ctx.fill(); });
+}
+
+function openCrop(which, file){
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const src = e.target.result;
+    cropState.target = which; cropState.src = src; cropState.scale = 1; cropState.x = 0; cropState.y = 0;
+    qs('#cropImg').src = src; qs('#cropZoom').value = 1; qs('#cropDialog').showModal();
+    requestAnimationFrame(()=>fitCropImage());
+  };
+  reader.readAsDataURL(file);
+  qs('#'+which+'PhotoMeta').textContent = file.name;
+}
+function fitCropImage(){
+  const vp = qs('#cropViewport'); const img = qs('#cropImg');
+  const apply = ()=>{
+    if(!img.naturalWidth) return;
+    const base = Math.max(vp.clientWidth / img.naturalWidth, vp.clientHeight / img.naturalHeight);
+    img.dataset.base = base;
+    renderCrop();
+  };
+  if(img.complete) apply(); else img.onload = apply;
+}
+function renderCrop(){
+  const img = qs('#cropImg'); const vp=qs('#cropViewport'); if(!img.naturalWidth || !vp.clientWidth) return;
+  const base = parseFloat(img.dataset.base||1); const s = base * cropState.scale;
+  const w = img.naturalWidth * s; const h = img.naturalHeight * s;
+  img.style.width = w+'px'; img.style.height = h+'px';
+  img.style.left = ((vp.clientWidth - w)/2 + cropState.x) + 'px';
+  img.style.top = ((vp.clientHeight - h)/2 + cropState.y) + 'px';
+}
+function clampCrop(){
+  const img = qs('#cropImg'); const vp=qs('#cropViewport'); if(!img.naturalWidth) return;
+  const base = parseFloat(img.dataset.base||1); const s = base * cropState.scale;
+  const w = img.naturalWidth*s, h = img.naturalHeight*s; const maxX = Math.max(0,(w-vp.clientWidth)/2), maxY = Math.max(0,(h-vp.clientHeight)/2);
+  cropState.x = Math.max(-maxX, Math.min(maxX, cropState.x)); cropState.y = Math.max(-maxY, Math.min(maxY, cropState.y));
+}
+function initCropEvents(){
+  const vp = qs('#cropViewport'); let sx=0, sy=0;
+  function start(clientX,clientY){ cropState.dragging=true; sx=clientX; sy=clientY; }
+  function move(clientX,clientY){ if(!cropState.dragging) return; cropState.x += clientX-sx; cropState.y += clientY-sy; sx=clientX; sy=clientY; clampCrop(); renderCrop(); }
+  function end(){ cropState.dragging=false; }
+  vp.addEventListener('mousedown',e=>{e.preventDefault(); start(e.clientX,e.clientY)}); window.addEventListener('mousemove',e=>move(e.clientX,e.clientY)); window.addEventListener('mouseup',end);
+  vp.addEventListener('touchstart',e=>{const t=e.touches[0]; start(t.clientX,t.clientY);},{passive:true}); window.addEventListener('touchmove',e=>{const t=e.touches[0]; if(t) move(t.clientX,t.clientY);},{passive:true}); window.addEventListener('touchend',end);
+  qs('#cropZoom').addEventListener('input',e=>{ cropState.scale = parseFloat(e.target.value); clampCrop(); renderCrop(); });
+  qs('#cropCancel').addEventListener('click',()=>qs('#cropDialog').close());
+  qs('#cropApply').addEventListener('click',()=>{
+    const target = cropState.target; if(!target) return;
+    photos[target] = {src:cropState.src, x:(cropState.x/(qs('#cropViewport').clientWidth/2))*50, y:(cropState.y/(qs('#cropViewport').clientHeight/2))*50, scale:cropState.scale, fileName:qs('#'+target+'PhotoMeta').textContent};
+    updatePreview(); qs('#cropDialog').close();
+  });
+  window.addEventListener('resize', ()=>{ if(qs('#cropDialog').open) { fitCropImage(); } });
+}
+
+function collectState(){
+  const ids = ['aName','bName','relationType','period','relationLabel','centerMark','mainTitle','engTitle','kicker','introText','footerText','accent','sheetBg','ink','patternColor','themeFontTitle','themeFontBody','photoShape','pattern','patternSize','metric1','metric2','metric3','metric4','metric5','graphMetricA','graphMetricB','turningPoint','biggestChange','currentState','futureWish'];
+  const data = {events, photos};
+  ids.forEach(id=>data[id]=qs('#'+id).value);
+  return data;
+}
+function applyState(data){
+  Object.entries(data).forEach(([k,v])=>{ if(qs('#'+k)) qs('#'+k).value = v; });
+  if(data.events) events = data.events; if(data.photos) photos = data.photos;
+  rebuildMetricSelects(); updateEventsEditor(); updatePreview();
+  ['a','b'].forEach(key=>qs('#'+key+'PhotoMeta').textContent = photos[key]?.fileName || '선택된 파일 없음');
+}
+function download(name, blob){ const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000); }
+
+function makeOOC(){
+  const a = safe(qs('#aName').value,'A'), b = safe(qs('#bName').value,'B');
+  const relationType = safe(qs('#relationType').value,'자유 관계');
+  const metricList = metricNames();
+  const title = safe(qs('#mainTitle').value,'관계의 변천사'); const eng = safe(qs('#engTitle').value,'The Story of Us');
+  const eventLines = events.map((ev,idx)=>{
+    const aVals = metricList.map((m,i)=>`${m} ${ev.a?.[i]??0}`).join(', ');
+    const bVals = metricList.map((m,i)=>`${m} ${ev.b?.[i]??0}`).join(', ');
+    return `${idx+1}. 사건명: ${safe(ev.name,'')}
+   시점: ${safe(ev.time,'')}
+   설명: ${safe(ev.desc,'')}
+   감정 한 줄: ${safe(ev.mood,'')}
+   ${a}→${b}: ${aVals}
+   ${b}→${a}: ${bVals}`;
+  }).join('\n');
+  const ooc = `ooc: 롤플레잉 중단. 새로운 에피소드 시작.
+다음은 DEARLY — 관계의 변천사 제작기를 채우기 위한 참고용 정리입니다. 제작기에 그대로 옮겨적는 형식이 아니라, 두 사람의 관계 흐름을 이해하고 제목/문구/사건 설명/감정 변화를 구성할 수 있도록 서술해 주세요.
+
+[기본 정보]
+- 관계 유형: ${relationType}
+- A 이름: ${a}
+- B 이름: ${b}
+- 관계명: ${safe(qs('#relationLabel').value,'')}
+- 함께한 기간: ${safe(qs('#period').value,'')}
+
+[완성본 텍스트 제안]
+- 메인 제목 제안: ${title}
+- 영문 부제 제안: ${eng}
+- 상단 문구 제안: ${safe(qs('#introText').value,'')}
+- 하단 문구 제안: ${safe(qs('#footerText').value,'')}
+
+[사용 감정/관계 항목]
+- ${metricList.join(', ')}
+
+[사건 타임라인]
+${eventLines}
+
+[요약 섹션]
+- 관계의 전환점: ${safe(qs('#turningPoint').value,'')}
+- 가장 크게 변한 것: ${safe(qs('#biggestChange').value,'')}
+- 지금, 우리는: ${safe(qs('#currentState').value,'')}
+- 앞으로의 방향: ${safe(qs('#futureWish').value,'')}
+
+위 내용을 바탕으로 다음을 자세히 정리해 주세요.
+1) 두 사람의 관계를 가장 잘 설명하는 메인 제목과 영문 부제 3안
+2) 상단 문구 3안과 하단 문구 3안
+3) 각 사건이 관계에 미친 의미와 감정 변화 해설
+4) 각 감정 항목이 왜 그런 수치인지에 대한 짧은 근거
+5) 최종적으로 '지금, ${a}${eunNeun(a)} ${b}에게 어떤 존재인지', '${b}${eunNeun(b)} ${a}에게 어떤 존재인지'에 대한 요약`;
+  qs('#oocOutput').textContent = ooc;
+}
+
+async function exportPNG(){
+  const sheet = qs('#sheet');
+  const canvas = await html2canvas(sheet,{backgroundColor:null,scale:2,useCORS:true,allowTaint:true});
+  canvas.toBlob(blob=> download(`DEARLY — ${safe(qs('#mainTitle').value,'관계의 변천사')}.png`, blob));
+}
+
+function init(){
+  initFonts(); initThemes(); initCropEvents();
+  events = defaultEvents(); rebuildMetricSelects(); updateEventsEditor(); updatePreview();
+
+  qsa('input[type=text],input[type=number],textarea,select,input[type=color]').forEach(el=>el.addEventListener('input', ()=>{
+    if(/^metric[1-5]$/.test(el.id)){ rebuildMetricSelects(); }
+    else updatePreview();
+  }));
+  qs('#aPhoto').addEventListener('change',e=>openCrop('a', e.target.files[0]));
+  qs('#bPhoto').addEventListener('change',e=>openCrop('b', e.target.files[0]));
+  qs('#addEventBtn').addEventListener('click',()=>{ events.push({name:'새 사건',time:'',desc:'',mood:'',a:[0,0,0,0,0],b:[0,0,0,0,0]}); updateEventsEditor(); updatePreview(); });
+  qs('#resetEventsBtn').addEventListener('click',()=>{ events = defaultEvents(); updateEventsEditor(); updatePreview(); });
+  qs('#makeOOCBtn').addEventListener('click',makeOOC);
+  qs('#copyOOCBtn').addEventListener('click',async()=>{ if(!qs('#oocOutput').textContent) makeOOC(); await navigator.clipboard.writeText(qs('#oocOutput').textContent); });
+  qs('#savePngBtn').addEventListener('click',exportPNG);
+  qs('#saveJsonBtn').addEventListener('click',()=> download('DEARLY_RELATIONSHIP_TIMELINE_work.json', new Blob([JSON.stringify(collectState(),null,2)],{type:'application/json'})));
+  qs('#loadJsonBtn').addEventListener('click',()=>qs('#loadJsonInput').click());
+  qs('#loadJsonInput').addEventListener('change',e=>{ const file=e.target.files[0]; if(!file) return; const r=new FileReader(); r.onload=ev=>{ try{ applyState(JSON.parse(ev.target.result)); }catch(err){ alert('작업 파일을 읽을 수 없습니다.'); } }; r.readAsText(file);});
+  qs('#resetAllBtn').addEventListener('click',()=>{ if(confirm('입력한 내용을 기본값으로 되돌릴까요?')) location.reload(); });
+}
+init();
+</script>
+</body>
+</html>
