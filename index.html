@@ -10,7 +10,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Gowun+Batang:wght@400;700&family=Gaegu:wght@400;700&family=Gamja+Flower&family=Nanum+Pen+Script&family=Single+Day&family=Nanum+Myeongjo:wght@400;700&family=Hahmlet:wght@400;700&display=swap');
 :root{
   --bg:#fff7fa;--panel:#ffffffcc;--card:#fffdfd;--accent:#d78ca6;--accent-soft:#f4d7e2;--line:#efd3de;--ink:#4d3f46;--muted:#8e7480;
-  --sheet-bg:#fffafc;--pattern:none;--pattern-color:#e7bfd0;--pattern-size:22px;--title-font:'Gowun Batang',serif;--body-font:'Pretendard Variable','Pretendard','Gowun Dodum',sans-serif;
+  --sheet-bg:#fffafc;--a-graph:#d97d9c;--b-graph:#6aa8d4;--pattern:none;--pattern-color:#e7bfd0;--pattern-size:22px;--title-font:'Gowun Batang',serif;--body-font:'Pretendard Variable','Pretendard','Gowun Dodum',sans-serif;
 }
 *{box-sizing:border-box}
 html,body{margin:0;background:
@@ -111,7 +111,7 @@ button.sm{padding:8px 10px;border-radius:12px;font-size:12px}
 .metricCol{padding:10px;border-radius:14px;background:#fff;border:1px solid color-mix(in srgb,var(--accent) 12%,white)}
 .metricCol h5{margin:0 0 7px;font-size:12px;color:#8f5973}
 .smallMeter{display:grid;grid-template-columns:56px 1fr 28px;gap:8px;align-items:center;margin-bottom:6px;font-size:11px}
-.track{height:7px;border-radius:999px;background:#f3e3e9;overflow:hidden}.fill{height:100%;border-radius:999px}.aFill{background:linear-gradient(90deg,#ebb2c5,#d97d9c)}.bFill{background:linear-gradient(90deg,#a7d2ef,#6aa8d4)}
+.track{height:7px;border-radius:999px;background:#f3e3e9;overflow:hidden}.fill{height:100%;border-radius:999px}.aFill{background:var(--a-graph)}.bFill{background:var(--b-graph)}
 .summaryGrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px}
 .summaryBox{padding:16px;border-radius:18px;background:linear-gradient(180deg,#fff,#fffafc);border:1px solid color-mix(in srgb,var(--accent) 15%,white)}
 .summaryBox b{display:block;margin-bottom:8px;font-size:12px;color:#926178;letter-spacing:.03em}.summaryBox div{font-family:var(--title-font);font-size:18px;color:#654756;line-height:1.5;white-space:pre-wrap}
@@ -180,6 +180,10 @@ button.sm{padding:8px 10px;border-radius:12px;font-size:12px}
         <div class="pair" style="margin-top:10px">
           <div><label for="ink">글자색</label><input id="ink" type="color" value="#4d3f46"></div>
           <div><label for="patternColor">패턴 색상</label><input id="patternColor" type="color" value="#e7bfd0"></div>
+        </div>
+        <div class="pair" style="margin-top:10px">
+          <div><label for="graphColorA">A 그래프 색상</label><input id="graphColorA" type="color" value="#d97d9c"></div>
+          <div><label for="graphColorB">B 그래프 색상</label><input id="graphColorB" type="color" value="#6aa8d4"></div>
         </div>
         <div class="pair" style="margin-top:10px">
           <div><label for="themeFontTitle">제목 글꼴</label><select id="themeFontTitle"></select></div>
@@ -278,7 +282,7 @@ button.sm{padding:8px 10px;border-radius:12px;font-size:12px}
           <section class="panelCard">
             <div class="graphHead">
               <h4>감정 흐름 그래프</h4>
-              <div class="legend"><span><i class="dot" style="background:#d97d9c"></i><b id="legend1">호감</b> · A→B</span><span><i class="dot" style="background:#6aa8d4"></i><b id="legend2">신뢰</b> · B→A</span></div>
+              <div class="legend"><span><i class="dot" id="legendDotA" style="background:var(--a-graph)"></i><b id="legend1">호감</b> · A→B</span><span><i class="dot" id="legendDotB" style="background:var(--b-graph)"></i><b id="legend2">신뢰</b> · B→A</span></div>
             </div>
             <canvas id="graph" class="graphCanvas" width="820" height="260"></canvas>
           </section>
@@ -335,10 +339,10 @@ const fontLabels = {
 };
 const themes = [
   {id:'pink',name:'Soft Pink Archive',desc:'연핑크 아카이브',accent:'#d78ca6',bg:'#fffafc',ink:'#4d3f46',patternColor:'#e7bfd0',pattern:'grid',titleFont:'gowunBatang',bodyFont:'pretendard',photo:'rounded'},
-  {id:'cream',name:'Cream Diary',desc:'크림 다이어리',accent:'#b89372',bg:'#fffdf8',ink:'#554841',patternColor:'#dcc8b4',pattern:'paper',titleFont:'gowunBatang',bodyFont:'pretendard',photo:'arch'},
-  {id:'blue',name:'Blue Memory',desc:'푸른 기억',accent:'#7a9fc8',bg:'#f8fbff',ink:'#445260',patternColor:'#c7d9ef',pattern:'dot',titleFont:'gowunBatang',bodyFont:'pretendard',photo:'circle'},
-  {id:'mono',name:'Monochrome Story',desc:'모노크롬 스토리',accent:'#909090',bg:'#fcfcfc',ink:'#404040',patternColor:'#dddddd',pattern:'line',titleFont:'gowunBatang',bodyFont:'pretendard',photo:'square'},
-  {id:'rose',name:'Rose Letter',desc:'로즈 레터',accent:'#b87489',bg:'#fff9fb',ink:'#5a444d',patternColor:'#e7c4d0',pattern:'check',titleFont:'hahmlet',bodyFont:'pretendard',photo:'polaroid'}
+  {id:'cream',name:'Cream Diary',desc:'크림 다이어리',accent:'#b89372',bg:'#fffdf8',ink:'#554841',patternColor:'#dcc8b4',pattern:'paper',graphA:'#b89372',graphB:'#829e91',titleFont:'gowunBatang',bodyFont:'pretendard',photo:'arch'},
+  {id:'blue',name:'Blue Memory',desc:'푸른 기억',accent:'#7a9fc8',bg:'#f8fbff',ink:'#445260',patternColor:'#c7d9ef',pattern:'dot',graphA:'#7a9fc8',graphB:'#d59aa8',titleFont:'gowunBatang',bodyFont:'pretendard',photo:'circle'},
+  {id:'mono',name:'Monochrome Story',desc:'모노크롬 스토리',accent:'#909090',bg:'#fcfcfc',ink:'#404040',patternColor:'#dddddd',pattern:'line',graphA:'#555555',graphB:'#aaaaaa',titleFont:'gowunBatang',bodyFont:'pretendard',photo:'square'},
+  {id:'rose',name:'Rose Letter',desc:'로즈 레터',accent:'#b87489',bg:'#fff9fb',ink:'#5a444d',patternColor:'#e7c4d0',pattern:'check',graphA:'#b87489',graphB:'#8d86ad',titleFont:'hahmlet',bodyFont:'pretendard',photo:'polaroid'}
 ];
 let events = [];
 let cropState = {target:null, src:'', x:0, y:0, scale:1, dragging:false, startX:0, startY:0};
@@ -384,6 +388,7 @@ function applyTheme(id, update=true){
   const t = themes.find(x=>x.id===id) || themes[0];
   qsa('.themeChip').forEach(b=>b.classList.toggle('active', b.dataset.id===id));
   qs('#accent').value=t.accent; qs('#sheetBg').value=t.bg; qs('#ink').value=t.ink; qs('#patternColor').value=t.patternColor;
+  qs('#graphColorA').value=t.graphA || '#d97d9c'; qs('#graphColorB').value=t.graphB || '#6aa8d4';
   qs('#pattern').value=t.pattern; qs('#themeFontTitle').value=t.titleFont; qs('#themeFontBody').value=t.bodyFont; qs('#photoShape').value=t.photo;
   if(update) updatePreview();
 }
@@ -480,6 +485,8 @@ function updatePreview(){
   qs('#pvCurrentState').textContent = safe(qs('#currentState').value,'');
   qs('#pvFutureWish').textContent = safe(qs('#futureWish').value,'');
   qs('#pvFooterText').textContent = safe(qs('#footerText').value,'');
+  qs('#sheet').style.setProperty('--a-graph', qs('#graphColorA').value);
+  qs('#sheet').style.setProperty('--b-graph', qs('#graphColorB').value);
   qs('#legend1').textContent = safe(qs('#graphMetricA').value, metricNames()[0]);
   qs('#legend2').textContent = safe(qs('#graphMetricB').value, metricNames()[1]);
   const sheet = qs('#sheet');
@@ -531,7 +538,7 @@ function drawGraph(){
   const idxA = metricNames().indexOf(metricAName); const idxB = metricNames().indexOf(metricBName);
   const ptsA = events.map((ev,i)=>({x:x0 + (events.length===1?xw/2:(xw/(events.length-1))*i), y:y0 + yh - (yh*((ev.a?.[idxA] ?? 0)/100)), label:ev.name||('사건'+(i+1)), v:ev.a?.[idxA]??0}));
   const ptsB = events.map((ev,i)=>({x:x0 + (events.length===1?xw/2:(xw/(events.length-1))*i), y:y0 + yh - (yh*((ev.b?.[idxB] ?? 0)/100)), label:ev.name||('사건'+(i+1)), v:ev.b?.[idxB]??0}));
-  drawLine(ctx,ptsA,'#d97d9c'); drawLine(ctx,ptsB,'#6aa8d4');
+  drawLine(ctx,ptsA,qs('#graphColorA').value); drawLine(ctx,ptsB,qs('#graphColorB').value);
   ptsA.forEach((p,i)=>{ ctx.fillStyle='#7d6672'; ctx.font='11px Pretendard'; ctx.textAlign='center'; ctx.fillText((events[i].name||('사건'+(i+1))).slice(0,9), p.x, h-12); });
 }
 function drawLine(ctx,pts,color){
@@ -597,7 +604,7 @@ function initCropEvents(){
 }
 
 function collectState(){
-  const ids = ['aName','bName','relationType','period','relationLabel','centerMark','mainTitle','engTitle','kicker','introText','footerText','accent','sheetBg','ink','patternColor','themeFontTitle','themeFontBody','photoShape','pattern','patternSize','metric1','metric2','metric3','metric4','metric5','graphMetricA','graphMetricB','turningPoint','biggestChange','currentState','futureWish'];
+  const ids = ['aName','bName','relationType','period','relationLabel','centerMark','mainTitle','engTitle','kicker','introText','footerText','accent','sheetBg','ink','patternColor','graphColorA','graphColorB','themeFontTitle','themeFontBody','photoShape','pattern','patternSize','metric1','metric2','metric3','metric4','metric5','graphMetricA','graphMetricB','turningPoint','biggestChange','currentState','futureWish'];
   const data = {events, photos};
   ids.forEach(id=>data[id]=qs('#'+id).value);
   return data;
