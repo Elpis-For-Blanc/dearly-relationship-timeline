@@ -240,13 +240,13 @@ button.sm{padding:8px 10px;border-radius:12px;font-size:12px}
         <div class="actions">
           <button id="makeOOCBtn" type="button">OOC 생성</button>
           <button id="copyOOCBtn" type="button" class="alt">OOC 복사</button>
-          <button id="savePngBtn" type="button">PNG 저장</button>
+          <button id="savePngBtn" type="button">4K PNG 저장</button>
           <button id="saveJsonBtn" type="button" class="ghost">작업 저장</button>
           <button id="loadJsonBtn" type="button" class="alt">작업 불러오기</button>
           <button id="resetAllBtn" type="button" class="ghost">전체 초기화</button>
         </div>
         <input id="loadJsonInput" type="file" accept="application/json" class="hidden">
-        <div class="help">OOC는 1,500자 이내로 생성돼. PNG 저장은 오른쪽 미리보기를 초고화질로 저장해. 작업 저장은 JSON 파일로 내려받아 나중에 다시 불러올 수 있어.</div>
+        <div class="help">OOC는 1,500자 이내로 생성돼. 4K PNG 저장은 오른쪽 미리보기를 4K 기준의 고화질 PNG로 저장해. 작업 저장은 JSON 파일로 내려받아 나중에 다시 불러올 수 있어.</div>
         <div id="oocOutput" class="oocBox" style="margin-top:12px">OOC 생성 버튼을 누르면 1,500자 이내 프롬프트가 만들어져요.</div>
       </section>
     </aside>
@@ -700,22 +700,23 @@ function makeOOC(){
 async function exportPNG(){
   const button=qs('#savePngBtn'), prior=button.textContent;
   if(button.disabled) return;
-  button.disabled=true; button.textContent='PNG 저장 중…';
+  button.disabled=true; button.textContent='4K 저장 중…';
   try{
     const sheet=qs('#sheet');
     if(typeof html2canvas!=='function') throw new Error('이미지 저장 라이브러리를 불러오지 못했어. 인터넷 연결을 확인하고 다시 시도해 줘.');
     if(document.fonts?.ready) await document.fonts.ready;
     const width=sheet.offsetWidth, height=sheet.scrollHeight;
     if(!width||!height) throw new Error('미리보기 크기를 읽지 못했어.');
-    // Export at a much higher resolution while keeping very long pages stable.
-    // Typical layouts save at 4x; exceptionally long pages scale down automatically.
-    const maxPixels=64000000;
-    const preferredScale=4;
+    // Save at 4K-class quality by targeting 3840px width when possible.
+    // Very tall layouts scale down automatically to avoid browser canvas limits.
+    const targetWidth=3840;
+    const maxPixels=120000000;
+    const preferredScale=targetWidth/width;
     const adaptiveScale=Math.sqrt(maxPixels/(width*height));
     const scale=Math.max(2, Math.min(preferredScale, adaptiveScale));
     const canvas=await html2canvas(sheet,{
       backgroundColor:qs('#sheetBg').value,scale,useCORS:true,allowTaint:false,
-      width,height,scrollX:0,scrollY:0,windowWidth:Math.max(width,1600),windowHeight:Math.max(height,2400),
+      width,height,scrollX:0,scrollY:0,windowWidth:Math.max(width,3840),windowHeight:Math.max(height,2400),
       onclone(doc){
         const clone=doc.getElementById('sheet');
         clone.style.width=width+'px';
