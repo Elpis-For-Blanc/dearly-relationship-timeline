@@ -246,7 +246,7 @@ button.sm{padding:8px 10px;border-radius:12px;font-size:12px}
           <button id="resetAllBtn" type="button" class="ghost">전체 초기화</button>
         </div>
         <input id="loadJsonInput" type="file" accept="application/json" class="hidden">
-        <div class="help">OOC는 1,500자 이내로 생성돼. PNG 저장은 오른쪽 미리보기를 그대로 고화질로 저장해. 작업 저장은 JSON 파일로 내려받아 나중에 다시 불러올 수 있어.</div>
+        <div class="help">OOC는 1,500자 이내로 생성돼. PNG 저장은 오른쪽 미리보기를 더 선명한 고화질로 저장해. 작업 저장은 JSON 파일로 내려받아 나중에 다시 불러올 수 있어.</div>
         <div id="oocOutput" class="oocBox" style="margin-top:12px">OOC 생성 버튼을 누르면 1,500자 이내 프롬프트가 만들어져요.</div>
       </section>
     </aside>
@@ -707,8 +707,12 @@ async function exportPNG(){
     if(document.fonts?.ready) await document.fonts.ready;
     const width=sheet.offsetWidth, height=sheet.scrollHeight;
     if(!width||!height) throw new Error('미리보기 크기를 읽지 못했어.');
-    // Adapt the resolution for long timelines to stay below canvas memory limits.
-    const scale=Math.min(2.5, Math.sqrt(19000000/(width*height)));
+    // Export at a higher resolution while staying within canvas memory limits.
+    // Most layouts save around 3x, and very long layouts scale down automatically for stability.
+    const maxPixels=32000000;
+    const preferredScale=3;
+    const adaptiveScale=Math.sqrt(maxPixels/(width*height));
+    const scale=Math.max(1.5, Math.min(preferredScale, adaptiveScale));
     const canvas=await html2canvas(sheet,{
       backgroundColor:qs('#sheetBg').value,scale,useCORS:true,allowTaint:false,
       width,height,scrollX:0,scrollY:0,windowWidth:Math.max(document.documentElement.clientWidth,1200),
