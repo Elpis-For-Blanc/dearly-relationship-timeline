@@ -459,9 +459,17 @@ function updateEventsEditor(){
 function setPortrait(el, photo){
   const inner = el.querySelector('.inner');
   if(photo.src){
+    // Applied crops are actual square images; display the exact crop without
+    // interpreting drag offsets as CSS background-position percentages.
     inner.style.backgroundImage = `url(${photo.src})`;
-    inner.style.backgroundSize = `${photo.scale*100}% auto`;
-    inner.style.backgroundPosition = `${50 + photo.x}% ${50 + photo.y}%`;
+    if(photo.cropped){
+      inner.style.backgroundSize = 'cover';
+      inner.style.backgroundPosition = 'center';
+    }else{
+      // Keep compatibility with projects saved before the crop fix.
+      inner.style.backgroundSize = `${(photo.scale || 1)*100}% auto`;
+      inner.style.backgroundPosition = `${50 + (photo.x || 0)}% ${50 + (photo.y || 0)}%`;
+    }
   }else{
     inner.style.backgroundImage = 'linear-gradient(135deg,#f5edf1,#ebe3e7)';
     inner.style.backgroundSize = 'cover';
@@ -597,7 +605,32 @@ function initCropEvents(){
   qs('#cropCancel').addEventListener('click',()=>qs('#cropDialog').close());
   qs('#cropApply').addEventListener('click',()=>{
     const target = cropState.target; if(!target) return;
-    photos[target] = {src:cropState.src, x:(cropState.x/(qs('#cropViewport').clientWidth/2))*50, y:(cropState.y/(qs('#cropViewport').clientHeight/2))*50, scale:cropState.scale, fileName:qs('#'+target+'PhotoMeta').textContent};
+    const vp = qs('#cropViewport'), img = qs('#cropImg');
+    if(!vp.clientWidth || !vp.clientHeight || !img.naturalWidth){
+      alert('사진을 불러오는 중이에요. 잠시 후 다시 적용해 주세요.');
+      return;
+    }
+    clampCrop(); renderCrop();
+    // Draw the exact visible viewport into a real square bitmap. This avoids
+    // the old mismatch between crop-dialog pixels and CSS background sizing.
+    const canvas = document.createElement('canvas');
+    canvas.width = 1200; canvas.height = 1200;
+    const ctx = canvas.getContext('2d');
+    const base = parseFloat(img.dataset.base || 1);
+    const scale = base * cropState.scale;
+    const imageWidth = img.naturalWidth * scale;
+    const imageHeight = img.naturalHeight * scale;
+    const left = (vp.clientWidth-imageWidth)/2 + cropState.x;
+    const top = (vp.clientHeight-imageHeight)/2 + cropState.y;
+    ctx.drawImage(img, left * canvas.width/vp.clientWidth,
+      top * canvas.height/vp.clientHeight,
+      imageWidth * canvas.width/vp.clientWidth,
+      imageHeight * canvas.height/vp.clientHeight);
+    photos[target] = {
+      src:canvas.toDataURL('image/png'), cropped:true,
+      x:0,y:0,scale:1,
+      fileName:qs('#'+target+'PhotoMeta').textContent
+    };
     updatePreview(); qs('#cropDialog').close();
   });
   window.addEventListener('resize', ()=>{ if(qs('#cropDialog').open) { fitCropImage(); } });
