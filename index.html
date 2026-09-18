@@ -237,16 +237,38 @@ button.sm{padding:8px 10px;border-radius:12px;font-size:12px}
 
       <section class="section">
         <h3>06. OOC / 저장</h3>
+        <div class="pair" style="margin-bottom:10px">
+          <div>
+            <label for="exportQuality">저장 화질</label>
+            <select id="exportQuality">
+              <option value="1600">SNS용 선명 저장 (1600px)</option>
+              <option value="1920">Full HD (1920px)</option>
+              <option value="2560">QHD (2560px)</option>
+              <option value="3840" selected>4K (3840px)</option>
+              <option value="5120">Ultra (5120px)</option>
+            </select>
+          </div>
+          <div>
+            <label for="splitCount">분할 장수</label>
+            <select id="splitCount">
+              <option value="2">2장 분할</option>
+              <option value="3">3장 분할</option>
+              <option value="4" selected>4장 분할</option>
+            </select>
+          </div>
+        </div>
         <div class="actions">
           <button id="makeOOCBtn" type="button">OOC 생성</button>
           <button id="copyOOCBtn" type="button" class="alt">OOC 복사</button>
-          <button id="savePngBtn" type="button">4K PNG 저장</button>
+          <button id="savePngBtn" type="button">선택 화질 PNG 저장</button>
+          <button id="saveSplitBtn" type="button" class="ghost">4장 그대로 분할 저장</button>
+          <button id="saveReflowSplitBtn" type="button" class="ghost">4장 자동 재배치 저장</button>
           <button id="saveJsonBtn" type="button" class="ghost">작업 저장</button>
           <button id="loadJsonBtn" type="button" class="alt">작업 불러오기</button>
           <button id="resetAllBtn" type="button" class="ghost">전체 초기화</button>
         </div>
         <input id="loadJsonInput" type="file" accept="application/json" class="hidden">
-        <div class="help">OOC는 1,500자 이내로 생성돼. 4K PNG 저장은 오른쪽 미리보기를 4K 기준의 고화질 PNG로 저장해. 작업 저장은 JSON 파일로 내려받아 나중에 다시 불러올 수 있어.</div>
+        <div class="help">OOC는 1,500자 이내로 생성돼. 저장 화질에서 원하는 해상도를 고른 뒤 단일 PNG 저장, 그대로 분할 저장, 자동 재배치 분할 저장을 사용할 수 있어. 그대로 분할은 세로로 긴 결과물을 위에서 아래 순서대로 나눠 저장하고, 자동 재배치 분할은 각 장을 트위터 업로드용 4:5 카드 비율로 다시 정리해서 저장해. 분할 장수는 2장·3장·4장 중에서 선택할 수 있어. 작업 저장은 JSON 파일로 내려받아 나중에 다시 불러올 수 있어.</div>
         <div id="oocOutput" class="oocBox" style="margin-top:12px">OOC 생성 버튼을 누르면 1,500자 이내 프롬프트가 만들어져요.</div>
       </section>
     </aside>
@@ -697,44 +719,244 @@ function makeOOC(){
   qs('#oocOutput').textContent = prompt.length <= 1500 ? prompt : prompt.slice(0,1499) + ']';
 }
 
+
+function getExportSettings(){
+  const select = qs('#exportQuality');
+  const targetWidth = Math.max(1200, parseInt(select?.value || '3840', 10) || 3840);
+  const label = select?.selectedOptions?.[0]?.textContent?.trim() || `${targetWidth}px`;
+  return { targetWidth, label };
+}
+
+function getSplitCount(){
+  return Math.max(2, Math.min(4, parseInt(qs('#splitCount')?.value || '4', 10) || 4));
+}
+
+function sanitizeLabel(value){
+  return String(value || '').replace(/[\/:*?"<>|]/g,'_');
+}
+
+function wait(ms){
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function roundedRect(ctx, x, y, w, h, r){
+  const rr = Math.min(r, w/2, h/2);
+  ctx.beginPath();
+  ctx.moveTo(x + rr, y);
+  ctx.arcTo(x + w, y, x + w, y + h, rr);
+  ctx.arcTo(x + w, y + h, x, y + h, rr);
+  ctx.arcTo(x, y + h, x, y, rr);
+  ctx.arcTo(x, y, x + w, y, rr);
+  ctx.closePath();
+}
+
+function drawFittedSlice(ctx, sourceCanvas, startY, srcHeight, frameX, frameY, frameW, frameH){
+  const ratio = Math.min(frameW / sourceCanvas.width, frameH / srcHeight);
+  const drawW = sourceCanvas.width * ratio;
+  const drawH = srcHeight * ratio;
+  const dx = frameX + (frameW - drawW) / 2;
+  const dy = frameY + (frameH - drawH) / 2;
+  ctx.drawImage(sourceCanvas, 0, startY, sourceCanvas.width, srcHeight, dx, dy, drawW, drawH);
+}
+
+function updateSplitButtonLabels(){
+  const count = getSplitCount();
+  const plainBtn = qs('#saveSplitBtn');
+  const reflowBtn = qs('#saveReflowSplitBtn');
+  if(plainBtn && !plainBtn.disabled) plainBtn.textContent = `${count}장 그대로 분할 저장`;
+  if(reflowBtn && !reflowBtn.disabled) reflowBtn.textContent = `${count}장 자동 재배치 저장`;
+}
+
+async function renderSheetCanvas(targetWidth){
+  const sheet = qs('#sheet');
+  if(typeof html2canvas!=='function') throw new Error('이미지 저장 라이브러리를 불러오지 못했어. 인터넷 연결을 확인하고 다시 시도해 줘.');
+  if(document.fonts?.ready) await document.fonts.ready;
+  const width = sheet.offsetWidth;
+  const height = sheet.scrollHeight;
+  if(!width || !height) throw new Error('미리보기 크기를 읽지 못했어.');
+
+  const maxPixels = 180000000;
+  const preferredScale = targetWidth / width;
+  const adaptiveScale = Math.sqrt(maxPixels / (width * height));
+  const scale = Math.max(1.5, Math.min(preferredScale, adaptiveScale));
+
+  const canvas = await html2canvas(sheet, {
+    backgroundColor: qs('#sheetBg').value,
+    scale,
+    useCORS: true,
+    allowTaint: false,
+    width,
+    height,
+    scrollX: 0,
+    scrollY: 0,
+    windowWidth: Math.max(width, targetWidth),
+    windowHeight: Math.max(height, 2400),
+    onclone(doc){
+      const clone = doc.getElementById('sheet');
+      clone.style.width = width + 'px';
+      clone.style.height = 'auto';
+      clone.style.minHeight = height + 'px';
+      clone.style.maxWidth = 'none';
+    }
+  });
+  return { canvas, width, height, scale };
+}
+
+async function canvasToBlob(canvas){
+  return await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+}
+
 async function exportPNG(){
-  const button=qs('#savePngBtn'), prior=button.textContent;
+  const button = qs('#savePngBtn'), prior = button.textContent;
   if(button.disabled) return;
-  button.disabled=true; button.textContent='4K 저장 중…';
+  button.disabled = true; button.textContent = 'PNG 저장 중…';
   try{
-    const sheet=qs('#sheet');
-    if(typeof html2canvas!=='function') throw new Error('이미지 저장 라이브러리를 불러오지 못했어. 인터넷 연결을 확인하고 다시 시도해 줘.');
-    if(document.fonts?.ready) await document.fonts.ready;
-    const width=sheet.offsetWidth, height=sheet.scrollHeight;
-    if(!width||!height) throw new Error('미리보기 크기를 읽지 못했어.');
-    // Save at 4K-class quality by targeting 3840px width when possible.
-    // Very tall layouts scale down automatically to avoid browser canvas limits.
-    const targetWidth=3840;
-    const maxPixels=120000000;
-    const preferredScale=targetWidth/width;
-    const adaptiveScale=Math.sqrt(maxPixels/(width*height));
-    const scale=Math.max(2, Math.min(preferredScale, adaptiveScale));
-    const canvas=await html2canvas(sheet,{
-      backgroundColor:qs('#sheetBg').value,scale,useCORS:true,allowTaint:false,
-      width,height,scrollX:0,scrollY:0,windowWidth:Math.max(width,3840),windowHeight:Math.max(height,2400),
-      onclone(doc){
-        const clone=doc.getElementById('sheet');
-        clone.style.width=width+'px';
-        clone.style.height='auto';
-        clone.style.minHeight=height+'px';
-        // CSS viewport media rules must not squeeze the export layout.
-        clone.style.maxWidth='none';
-      }
-    });
-    const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
+    const { targetWidth, label } = getExportSettings();
+    const { canvas } = await renderSheetCanvas(targetWidth);
+    const blob = await canvasToBlob(canvas);
     if(!blob) throw new Error('PNG 파일 변환에 실패했어.');
-    const name=safe(qs('#mainTitle').value,'관계의 변천사').replace(/[\\/:*?"<>|]/g,'_');
-    download(`DEARLY — ${name}.png`,blob);
+    const name = sanitizeLabel(safe(qs('#mainTitle').value,'관계의 변천사'));
+    download(`DEARLY — ${name} (${sanitizeLabel(label)}).png`, blob);
   }catch(err){
-    console.error('PNG export failed:',err);
-    alert('PNG 저장 중 문제가 발생했어. '+(err?.message||'브라우저를 새로고침하고 다시 시도해 줘.'));
+    console.error('PNG export failed:', err);
+    alert('PNG 저장 중 문제가 발생했어. ' + (err?.message || '브라우저를 새로고침하고 다시 시도해 줘.'));
   }finally{
-    button.disabled=false; button.textContent=prior;
+    button.disabled = false; button.textContent = prior;
+  }
+}
+
+async function exportSplitPNG(){
+  const button = qs('#saveSplitBtn'), prior = button.textContent;
+  if(button.disabled) return;
+  button.disabled = true; button.textContent = '분할 저장 중…';
+  try{
+    const { targetWidth, label } = getExportSettings();
+    const splitCount = getSplitCount();
+    const { canvas } = await renderSheetCanvas(targetWidth);
+    const baseName = sanitizeLabel(safe(qs('#mainTitle').value,'관계의 변천사'));
+    const sliceHeight = Math.ceil(canvas.height / splitCount);
+
+    for(let i = 0; i < splitCount; i++){
+      const startY = i * sliceHeight;
+      const partHeight = Math.min(sliceHeight, canvas.height - startY);
+      if(partHeight <= 0) continue;
+      const partCanvas = document.createElement('canvas');
+      partCanvas.width = canvas.width;
+      partCanvas.height = partHeight;
+      const ctx = partCanvas.getContext('2d');
+      ctx.drawImage(canvas, 0, startY, canvas.width, partHeight, 0, 0, canvas.width, partHeight);
+      const blob = await canvasToBlob(partCanvas);
+      if(!blob) throw new Error(`${i+1}번째 분할 이미지를 만들지 못했어.`);
+      const idx = String(i + 1).padStart(2, '0');
+      download(`DEARLY — ${baseName} (${sanitizeLabel(label)}) ${idx}-of-${splitCount}.png`, blob);
+      await wait(180);
+    }
+  }catch(err){
+    console.error('Split PNG export failed:', err);
+    alert('분할 저장 중 문제가 발생했어. ' + (err?.message || '브라우저를 새로고침하고 다시 시도해 줘.'));
+  }finally{
+    button.disabled = false; button.textContent = prior;
+    updateSplitButtonLabels();
+  }
+}
+
+async function exportReflowSplitPNG(){
+  const button = qs('#saveReflowSplitBtn'), prior = button.textContent;
+  if(button.disabled) return;
+  button.disabled = true; button.textContent = '자동 재배치 저장 중…';
+  try{
+    const { targetWidth, label } = getExportSettings();
+    const splitCount = getSplitCount();
+    const { canvas } = await renderSheetCanvas(targetWidth);
+    const baseName = sanitizeLabel(safe(qs('#mainTitle').value,'관계의 변천사'));
+    const pageWidth = Math.max(1200, targetWidth);
+    const pageHeight = Math.round(pageWidth * 5 / 4);
+    const pad = Math.round(pageWidth * 0.05);
+    const topBand = Math.round(pageHeight * 0.13);
+    const bottomBand = Math.round(pageHeight * 0.06);
+    const frameX = pad;
+    const frameY = topBand;
+    const frameW = pageWidth - pad * 2;
+    const frameH = pageHeight - topBand - bottomBand - pad;
+    const sliceHeight = Math.ceil(canvas.height / splitCount);
+    const bg = qs('#sheetBg').value;
+    const accent = qs('#accent').value;
+    const ink = qs('#ink').value;
+    const relationType = safe(qs('#relationType').value, '관계 기록');
+    const title = safe(qs('#mainTitle').value, '관계의 변천사');
+
+    for(let i = 0; i < splitCount; i++){
+      const startY = i * sliceHeight;
+      const srcHeight = Math.min(sliceHeight, canvas.height - startY);
+      if(srcHeight <= 0) continue;
+
+      const page = document.createElement('canvas');
+      page.width = pageWidth;
+      page.height = pageHeight;
+      const ctx = page.getContext('2d');
+      ctx.fillStyle = bg;
+      ctx.fillRect(0,0,pageWidth,pageHeight);
+
+      ctx.strokeStyle = accent;
+      ctx.lineWidth = Math.max(2, Math.round(pageWidth * 0.0015));
+      ctx.strokeRect(pad*0.55, pad*0.55, pageWidth - pad*1.1, pageHeight - pad*1.1);
+
+      ctx.fillStyle = accent;
+      ctx.font = `600 ${Math.round(pageWidth*0.019)}px Pretendard, sans-serif`;
+      ctx.textAlign = 'left';
+      ctx.fillText('DEARLY PAIR TEMPLATE', pad, Math.round(pageHeight*0.055));
+
+      ctx.fillStyle = ink;
+      ctx.font = `700 ${Math.round(pageWidth*0.04)}px Pretendard, sans-serif`;
+      ctx.fillText(title, pad, Math.round(pageHeight*0.093));
+
+      ctx.textAlign = 'right';
+      ctx.fillStyle = accent;
+      ctx.font = `600 ${Math.round(pageWidth*0.024)}px Pretendard, sans-serif`;
+      ctx.fillText(`${i+1} / ${splitCount}`, pageWidth - pad, Math.round(pageHeight*0.088));
+
+      ctx.textAlign = 'left';
+      ctx.fillStyle = ink;
+      ctx.font = `500 ${Math.round(pageWidth*0.022)}px Pretendard, sans-serif`;
+      ctx.fillText(relationType, pad, Math.round(pageHeight*0.118));
+
+      ctx.save();
+      ctx.shadowColor = 'rgba(0,0,0,0.08)';
+      ctx.shadowBlur = Math.round(pageWidth * 0.018);
+      ctx.shadowOffsetY = Math.round(pageWidth * 0.008);
+      ctx.fillStyle = '#ffffff';
+      roundedRect(ctx, frameX, frameY, frameW, frameH, Math.round(pageWidth*0.02));
+      ctx.fill();
+      ctx.restore();
+
+      ctx.save();
+      roundedRect(ctx, frameX, frameY, frameW, frameH, Math.round(pageWidth*0.02));
+      ctx.clip();
+      drawFittedSlice(ctx, canvas, startY, srcHeight, frameX, frameY, frameW, frameH);
+      ctx.restore();
+
+      ctx.strokeStyle = accent;
+      ctx.lineWidth = Math.max(2, Math.round(pageWidth * 0.0013));
+      roundedRect(ctx, frameX, frameY, frameW, frameH, Math.round(pageWidth*0.02));
+      ctx.stroke();
+
+      ctx.fillStyle = accent;
+      ctx.font = `500 ${Math.round(pageWidth*0.018)}px Pretendard, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.fillText('트위터 업로드용 자동 재배치 분할', pageWidth/2, pageHeight - Math.round(pageHeight*0.025));
+
+      const blob = await canvasToBlob(page);
+      if(!blob) throw new Error(`${i+1}번째 자동 재배치 이미지를 만들지 못했어.`);
+      const idx = String(i + 1).padStart(2, '0');
+      download(`DEARLY — ${baseName} (${sanitizeLabel(label)}) reflow ${idx}-of-${splitCount}.png`, blob);
+      await wait(180);
+    }
+  }catch(err){
+    console.error('Reflow split export failed:', err);
+    alert('자동 재배치 분할 저장 중 문제가 발생했어. ' + (err?.message || '브라우저를 새로고침하고 다시 시도해 줘.'));
+  }finally{
+    button.disabled = false; button.textContent = prior;
+    updateSplitButtonLabels();
   }
 }
 
@@ -753,10 +975,14 @@ function init(){
   qs('#makeOOCBtn').addEventListener('click',makeOOC);
   qs('#copyOOCBtn').addEventListener('click',async()=>{ if(!qs('#oocOutput').textContent) makeOOC(); await navigator.clipboard.writeText(qs('#oocOutput').textContent); });
   qs('#savePngBtn').addEventListener('click',exportPNG);
+  qs('#saveSplitBtn').addEventListener('click',exportSplitPNG);
+  qs('#saveReflowSplitBtn').addEventListener('click',exportReflowSplitPNG);
+  qs('#splitCount').addEventListener('change', updateSplitButtonLabels);
   qs('#saveJsonBtn').addEventListener('click',()=> download('DEARLY_RELATIONSHIP_TIMELINE_work.json', new Blob([JSON.stringify(collectState(),null,2)],{type:'application/json'})));
   qs('#loadJsonBtn').addEventListener('click',()=>qs('#loadJsonInput').click());
   qs('#loadJsonInput').addEventListener('change',e=>{ const file=e.target.files[0]; if(!file) return; const r=new FileReader(); r.onload=ev=>{ try{ applyState(JSON.parse(ev.target.result)); }catch(err){ alert('작업 파일을 읽을 수 없습니다.'); } }; r.readAsText(file);});
   qs('#resetAllBtn').addEventListener('click',()=>{ if(confirm('입력한 내용을 기본값으로 되돌릴까요?')) location.reload(); });
+  updateSplitButtonLabels();
 }
 init();
 </script>
