@@ -860,94 +860,214 @@ async function exportSplitPNG(){
   }
 }
 
+function cloneNodeWithCanvasContent(node){
+  const clone = node.cloneNode(true);
+  const sourceCanvases = [...node.querySelectorAll('canvas')];
+  const clonedCanvases = [...clone.querySelectorAll('canvas')];
+  sourceCanvases.forEach((sourceCanvas, index)=>{
+    const targetCanvas = clonedCanvases[index];
+    if(!targetCanvas) return;
+    const img = document.createElement('img');
+    img.src = sourceCanvas.toDataURL('image/png');
+    img.className = sourceCanvas.className;
+    img.style.width = '100%';
+    img.style.height = 'auto';
+    img.style.display = 'block';
+    targetCanvas.replaceWith(img);
+  });
+  return clone;
+}
+
+function buildTimelineSectionFromRange(start, end){
+  const originalSection = qsa('#sheet .panelCard')[1];
+  const clone = originalSection.cloneNode(true);
+  const sourceItems = [...qs('#timeline').children].slice(start, end).map(item=>item.cloneNode(true));
+  const body = clone.querySelector('#timeline') || clone.querySelector('.timeline');
+  if(body){
+    body.innerHTML = '';
+    body.removeAttribute('id');
+    if(sourceItems.length){
+      sourceItems.forEach(item=>body.appendChild(item));
+    }else{
+      const empty = document.createElement('div');
+      empty.className = 'eventItem';
+      empty.innerHTML = '<div class="node"></div><div class="eventCard"><div class="eventTop"><b>기록 없음</b></div><div class="eventDesc">이 장에는 배치된 사건이 없어요.</div></div>';
+      body.appendChild(empty);
+    }
+  }
+  return clone;
+}
+
+function distributeTimelineRanges(totalItems, splitCount){
+  if(totalItems <= 0) return Array.from({length:splitCount}, ()=>[0,0]);
+  const ranges = [];
+  if(splitCount === 2){
+    const firstCount = Math.max(1, Math.ceil(totalItems * 0.45));
+    ranges.push([0, firstCount]);
+    ranges.push([firstCount, totalItems]);
+    return ranges;
+  }
+  const timelinePages = splitCount - 1;
+  const base = Math.floor(totalItems / timelinePages);
+  let rem = totalItems % timelinePages;
+  let cursor = 0;
+  for(let i=0;i<timelinePages;i++){
+    const count = base + (rem > 0 ? 1 : 0);
+    if(rem > 0) rem--;
+    ranges.push([cursor, cursor + count]);
+    cursor += count;
+  }
+  return ranges;
+}
+
+function makeMetaCloneWithPage(totalPages, pageNo){
+  const meta = qs('#sheet .metaRibbon').cloneNode(true);
+  const pagePill = document.createElement('span');
+  pagePill.className = 'metaPill';
+  pagePill.textContent = `${pageNo} / ${totalPages} 페이지`;
+  meta.appendChild(pagePill);
+  return meta;
+}
+
+function makeExportSheetBase(){
+  const source = qs('#sheet');
+  const exportSheet = document.createElement('div');
+  exportSheet.className = source.className;
+  exportSheet.style.cssText = source.style.cssText;
+  exportSheet.style.width = '920px';
+  exportSheet.style.minHeight = '1300px';
+  exportSheet.style.height = 'auto';
+  exportSheet.style.margin = '0 auto';
+  exportSheet.style.boxSizing = 'border-box';
+  return exportSheet;
+}
+
+async function renderArbitrarySheetCanvas(element, targetWidth){
+  if(typeof html2canvas!=='function') throw new Error('이미지 저장 라이브러리를 불러오지 못했어.');
+  if(document.fonts?.ready) await document.fonts.ready;
+  const width = element.offsetWidth;
+  const height = element.scrollHeight;
+  if(!width || !height) throw new Error('분할 페이지 크기를 읽지 못했어.');
+  const maxPixels = 180000000;
+  const preferredScale = targetWidth / width;
+  const adaptiveScale = Math.sqrt(maxPixels / (width * height));
+  const scale = Math.max(1.5, Math.min(preferredScale, adaptiveScale));
+  const canvas = await html2canvas(element, {
+    backgroundColor: qs('#sheetBg').value,
+    scale,
+    useCORS: true,
+    allowTaint: false,
+    width,
+    height,
+    scrollX: 0,
+    scrollY: 0,
+    windowWidth: Math.max(width, targetWidth),
+    windowHeight: Math.max(height, 1800),
+    onclone(doc){
+      const clone = doc.body.lastElementChild?.querySelector('.sheet') || doc.querySelector('.sheet');
+      if(clone){
+        clone.style.width = width + 'px';
+        clone.style.height = 'auto';
+        clone.style.minHeight = height + 'px';
+        clone.style.maxWidth = 'none';
+      }
+    }
+  });
+  return canvas;
+}
+
+function buildReflowSplitPages(splitCount){
+  const pages = [];
+  const header = qs('#sheet .sheetHeader');
+  const profileBand = qs('#sheet .profileBand');
+  const quote = qs('#sheet .quote');
+  const graphPanel = qsa('#sheet .panelCard')[0];
+  const summaryGrid = qs('#sheet .summaryGrid');
+  const footerNote = qs('#sheet .footerNote');
+  const timelineItems = [...qs('#timeline').children];
+  const ranges = distributeTimelineRanges(timelineItems.length, splitCount);
+
+  for(let pageNo = 1; pageNo <= splitCount; pageNo++){
+    const page = makeExportSheetBase();
+    const compactMode = pageNo > 1;
+    const headerClone = header.cloneNode(true);
+    if(compactMode){
+      headerClone.style.marginBottom = '14px';
+      const main = headerClone.querySelector('.sheetTitle');
+      const sub = headerClone.querySelector('.sheetSubtitle');
+      if(main) main.style.fontSize = '34px';
+      if(sub) sub.style.fontSize = '13px';
+    }
+    page.appendChild(headerClone);
+    page.appendChild(makeMetaCloneWithPage(splitCount, pageNo));
+
+    if(pageNo === 1){
+      page.appendChild(profileBand.cloneNode(true));
+      page.appendChild(quote.cloneNode(true));
+      page.appendChild(cloneNodeWithCanvasContent(graphPanel));
+      if(splitCount === 2){
+        const [start, end] = ranges[0] || [0, 0];
+        const timeSection = buildTimelineSectionFromRange(start, end);
+        timeSection.style.marginTop = '18px';
+        page.appendChild(timeSection);
+      }
+    }else{
+      const headingCard = document.createElement('section');
+      headingCard.className = 'panelCard';
+      headingCard.style.padding = '16px 18px';
+      headingCard.innerHTML = `<div class="timelineTitle"><b>시간의 기록</b><span>${pageNo===splitCount ? '현재까지의 흐름과 정리' : '관계의 흐름을 이어서 보기'}</span></div>`;
+      page.appendChild(headingCard);
+      const rangeIndex = splitCount === 2 ? 1 : pageNo - 2;
+      const [start, end] = ranges[rangeIndex] || [0,0];
+      page.appendChild(buildTimelineSectionFromRange(start, end));
+    }
+
+    if((splitCount > 2 && pageNo === splitCount) || (splitCount === 2 && pageNo === 2)){
+      const summaryClone = summaryGrid.cloneNode(true);
+      summaryClone.style.marginTop = '18px';
+      page.appendChild(summaryClone);
+      page.appendChild(footerNote.cloneNode(true));
+    }
+    pages.push(page);
+  }
+  return pages;
+}
+
 async function exportReflowSplitPNG(){
   const button = qs('#saveReflowSplitBtn'), prior = button.textContent;
   if(button.disabled) return;
   button.disabled = true; button.textContent = '자동 재배치 저장 중…';
+  let mount = null;
   try{
     const { targetWidth, label } = getExportSettings();
     const splitCount = getSplitCount();
-    const { canvas } = await renderSheetCanvas(targetWidth);
     const baseName = sanitizeLabel(safe(qs('#mainTitle').value,'관계의 변천사'));
-    const pageWidth = Math.max(1200, targetWidth);
-    const pageHeight = Math.round(pageWidth * 5 / 4);
-    const pad = Math.round(pageWidth * 0.05);
-    const topBand = Math.round(pageHeight * 0.13);
-    const bottomBand = Math.round(pageHeight * 0.06);
-    const frameX = pad;
-    const frameY = topBand;
-    const frameW = pageWidth - pad * 2;
-    const frameH = pageHeight - topBand - bottomBand - pad;
-    const sliceHeight = Math.ceil(canvas.height / splitCount);
-    const bg = qs('#sheetBg').value;
-    const accent = qs('#accent').value;
-    const ink = qs('#ink').value;
-    const relationType = safe(qs('#relationType').value, '관계 기록');
-    const title = safe(qs('#mainTitle').value, '관계의 변천사');
+    const pages = buildReflowSplitPages(splitCount);
+    mount = document.createElement('div');
+    mount.style.position = 'fixed';
+    mount.style.left = '-100000px';
+    mount.style.top = '0';
+    mount.style.width = '940px';
+    mount.style.padding = '0';
+    mount.style.margin = '0';
+    mount.style.pointerEvents = 'none';
+    document.body.appendChild(mount);
 
-    for(let i = 0; i < splitCount; i++){
-      const startY = i * sliceHeight;
-      const srcHeight = Math.min(sliceHeight, canvas.height - startY);
-      if(srcHeight <= 0) continue;
-
-      const page = document.createElement('canvas');
-      page.width = pageWidth;
-      page.height = pageHeight;
-      const ctx = page.getContext('2d');
-      ctx.fillStyle = bg;
-      ctx.fillRect(0,0,pageWidth,pageHeight);
-
-      ctx.strokeStyle = accent;
-      ctx.lineWidth = Math.max(2, Math.round(pageWidth * 0.0015));
-      ctx.strokeRect(pad*0.55, pad*0.55, pageWidth - pad*1.1, pageHeight - pad*1.1);
-
-      ctx.fillStyle = accent;
-      ctx.textAlign = 'left';
-
-      ctx.fillStyle = ink;
-      ctx.font = `700 ${Math.round(pageWidth*0.04)}px Pretendard, sans-serif`;
-      ctx.fillText(title, pad, Math.round(pageHeight*0.093));
-
-      ctx.textAlign = 'right';
-      ctx.fillStyle = accent;
-      ctx.font = `600 ${Math.round(pageWidth*0.024)}px Pretendard, sans-serif`;
-      ctx.fillText(`${i+1} / ${splitCount}`, pageWidth - pad, Math.round(pageHeight*0.088));
-
-      ctx.textAlign = 'left';
-      ctx.fillStyle = ink;
-      ctx.font = `500 ${Math.round(pageWidth*0.022)}px Pretendard, sans-serif`;
-      ctx.fillText(relationType, pad, Math.round(pageHeight*0.118));
-
-      ctx.save();
-      ctx.shadowColor = 'rgba(0,0,0,0.08)';
-      ctx.shadowBlur = Math.round(pageWidth * 0.018);
-      ctx.shadowOffsetY = Math.round(pageWidth * 0.008);
-      ctx.fillStyle = '#ffffff';
-      roundedRect(ctx, frameX, frameY, frameW, frameH, Math.round(pageWidth*0.02));
-      ctx.fill();
-      ctx.restore();
-
-      ctx.save();
-      roundedRect(ctx, frameX, frameY, frameW, frameH, Math.round(pageWidth*0.02));
-      ctx.clip();
-      drawFittedSlice(ctx, canvas, startY, srcHeight, frameX, frameY, frameW, frameH);
-      ctx.restore();
-
-      ctx.strokeStyle = accent;
-      ctx.lineWidth = Math.max(2, Math.round(pageWidth * 0.0013));
-      roundedRect(ctx, frameX, frameY, frameW, frameH, Math.round(pageWidth*0.02));
-      ctx.stroke();
-
-      const blob = await canvasToBlob(page);
+    for(let i = 0; i < pages.length; i++){
+      mount.innerHTML = '';
+      mount.appendChild(pages[i]);
+      const canvas = await renderArbitrarySheetCanvas(pages[i], targetWidth);
+      const blob = await canvasToBlob(canvas);
       if(!blob) throw new Error(`${i+1}번째 자동 재배치 이미지를 만들지 못했어.`);
       const idx = String(i + 1).padStart(2, '0');
-      download(`DEARLY — ${baseName} (${sanitizeLabel(label)}) reflow ${idx}-of-${splitCount}.png`, blob);
+      download(`DEARLY — ${baseName} (${sanitizeLabel(label)}) reflow ${idx}-of-${pages.length}.png`, blob);
       await wait(180);
     }
   }catch(err){
     console.error('Reflow split export failed:', err);
     alert('자동 재배치 분할 저장 중 문제가 발생했어. ' + (err?.message || '브라우저를 새로고침하고 다시 시도해 줘.'));
   }finally{
+    if(mount?.parentNode) mount.parentNode.removeChild(mount);
     button.disabled = false; button.textContent = prior;
     updateSplitButtonLabels();
   }
