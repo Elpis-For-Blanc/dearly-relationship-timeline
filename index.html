@@ -61,7 +61,11 @@ button.sm{padding:8px 10px;border-radius:12px;font-size:12px}
 .themeGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
 .themeChip{padding:10px;border-radius:16px;border:1px solid var(--line);background:#fff;cursor:pointer;text-align:left}
 .themeChip b{display:block;font-size:13px;color:#6f4b5d}.themeChip span{font-size:11px;color:var(--muted)}
-.themeChip.active{border-color:var(--accent);box-shadow:0 0 0 3px #f7dde6}
+.themeChip.active{border-color:var(--chip-accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--chip-accent) 24%,transparent)}
+.themeChip{display:flex;flex-direction:column;gap:4px;min-height:106px;overflow:hidden;background:var(--chip-bg);border-color:color-mix(in srgb,var(--chip-accent) 22%,white)}
+.themeChip b{color:var(--chip-ink)}.themeChip .themeDesc{color:var(--chip-ink);opacity:.7}
+.themeSwatch{height:33px;display:flex;gap:5px;align-items:center;padding:5px 7px;margin-bottom:3px;background:repeating-linear-gradient(90deg,transparent 0 14px,color-mix(in srgb,var(--chip-pattern) 27%,transparent) 14px 15px);border:1px solid color-mix(in srgb,var(--chip-accent) 22%,white);border-radius:9px}
+.themeSwatch i{width:17px;height:17px;border-radius:50%;display:block;background:var(--chip-accent)}.themeSwatch i:nth-child(2){background:var(--chip-pattern)}.themeSwatch i:nth-child(3){background:var(--chip-ink)}
 .help{font-size:11px;color:var(--muted);line-height:1.55;margin-top:6px}
 .actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .previewScroll{overflow-x:auto;padding:18px}.sheetWrap{padding:10px}
@@ -153,7 +157,7 @@ button.sm{padding:8px 10px;border-radius:12px;font-size:12px}
           </div>
         </div>
         <div class="pair" style="margin-top:10px">
-          <div><label for="relationType">관계 유형</label><select id="relationType"><option>자유 관계</option><option>연인</option><option>친구</option><option>파트너</option><option>동료</option><option>라이벌</option><option>적대 관계</option><option>가족 같은 사이</option></select></div>
+          <div><label for="relationType">관계 유형</label><input id="relationType" type="text" list="relationTypeSuggestions" value="자유 관계" placeholder="관계 유형 직접 입력"><datalist id="relationTypeSuggestions"><option value="자유 관계"><option value="연인"><option value="친구"><option value="파트너"><option value="동료"><option value="라이벌"><option value="적대 관계"><option value="가족 같은 사이"></datalist></div>
           <div><label for="period">함께한 기간</label><input id="period" type="text" placeholder="예: 2년 3개월" value=""></div>
         </div>
         <div class="pair" style="margin-top:10px">
@@ -337,11 +341,22 @@ const fontLabels = {
   pretendard:"Pretendard", gowunDodum:"고운돋움", gowunBatang:"고운바탕", nanumMyeongjo:"나눔명조", hahmlet:"함렛", gaegu:"개구", gamja:"감자꽃", nanumPen:"나눔손글씨", singleDay:"싱글데이"
 };
 const themes = [
-  {id:'pink',name:'Soft Pink Archive',desc:'연핑크 아카이브',accent:'#d78ca6',bg:'#fffafc',ink:'#4d3f46',patternColor:'#e7bfd0',pattern:'grid',titleFont:'gowunBatang',bodyFont:'pretendard',photo:'rounded'},
-  {id:'cream',name:'Cream Diary',desc:'크림 다이어리',accent:'#b89372',bg:'#fffdf8',ink:'#554841',patternColor:'#dcc8b4',pattern:'paper',graphA:'#b89372',graphB:'#829e91',titleFont:'gowunBatang',bodyFont:'pretendard',photo:'arch'},
-  {id:'blue',name:'Blue Memory',desc:'푸른 기억',accent:'#7a9fc8',bg:'#f8fbff',ink:'#445260',patternColor:'#c7d9ef',pattern:'dot',graphA:'#7a9fc8',graphB:'#d59aa8',titleFont:'gowunBatang',bodyFont:'pretendard',photo:'circle'},
-  {id:'mono',name:'Monochrome Story',desc:'모노크롬 스토리',accent:'#909090',bg:'#fcfcfc',ink:'#404040',patternColor:'#dddddd',pattern:'line',graphA:'#555555',graphB:'#aaaaaa',titleFont:'gowunBatang',bodyFont:'pretendard',photo:'square'},
-  {id:'rose',name:'Rose Letter',desc:'로즈 레터',accent:'#b87489',bg:'#fff9fb',ink:'#5a444d',patternColor:'#e7c4d0',pattern:'check',graphA:'#b87489',graphB:'#8d86ad',titleFont:'hahmlet',bodyFont:'pretendard',photo:'polaroid'}
+  {id:'pink',name:'Soft Pink Archive',desc:'로지 핑크 · 아카이브',accent:'#d78ca6',bg:'#fffafc',ink:'#4d3f46',patternColor:'#e7bfd0',pattern:'grid',graphA:'#d97d9c',graphB:'#86a9d6',titleFont:'gowunBatang',bodyFont:'pretendard',photo:'rounded'},
+  {id:'cream',name:'Cream Diary',desc:'바닐라 · 다이어리',accent:'#b89372',bg:'#fffdf8',ink:'#554841',patternColor:'#dcc8b4',pattern:'paper',graphA:'#b89372',graphB:'#829e91',titleFont:'gowunBatang',bodyFont:'pretendard',photo:'arch'},
+  {id:'blue',name:'Blue Memory',desc:'페일 블루 · 기억',accent:'#7a9fc8',bg:'#f8fbff',ink:'#445260',patternColor:'#c7d9ef',pattern:'dot',graphA:'#7a9fc8',graphB:'#d59aa8',titleFont:'gowunBatang',bodyFont:'pretendard',photo:'circle'},
+  {id:'mono',name:'Monochrome Story',desc:'차콜 · 미니멀',accent:'#777777',bg:'#fcfcfc',ink:'#404040',patternColor:'#dddddd',pattern:'line',graphA:'#555555',graphB:'#aaaaaa',titleFont:'gowunBatang',bodyFont:'pretendard',photo:'square'},
+  {id:'rose',name:'Rose Letter',desc:'더스티 로즈 · 편지',accent:'#b87489',bg:'#fff9fb',ink:'#5a444d',patternColor:'#e7c4d0',pattern:'check',graphA:'#b87489',graphB:'#8d86ad',titleFont:'hahmlet',bodyFont:'pretendard',photo:'polaroid'},
+  {id:'lavender',name:'Lavender Haze',desc:'라벤더 · 몽환',accent:'#9e8bc7',bg:'#fcfaff',ink:'#514960',patternColor:'#d8ccef',pattern:'star',graphA:'#9b85cc',graphB:'#d99db9',titleFont:'hahmlet',bodyFont:'pretendard',photo:'arch'},
+  {id:'mint',name:'Mint Atelier',desc:'세이지 민트 · 공방',accent:'#79aa99',bg:'#f7fdf9',ink:'#405950',patternColor:'#bfdfd0',pattern:'grid',graphA:'#69a893',graphB:'#e0a583',titleFont:'gowunBatang',bodyFont:'gowunDodum',photo:'rounded'},
+  {id:'peach',name:'Peach Film',desc:'살구 · 필름 사진',accent:'#e19a81',bg:'#fffaf5',ink:'#644a45',patternColor:'#f0cfbf',pattern:'paper',graphA:'#de967b',graphB:'#a19abc',titleFont:'gowunBatang',bodyFont:'pretendard',photo:'polaroid'},
+  {id:'navy',name:'Midnight Archive',desc:'딥 네이비 · 기록',accent:'#7189b1',bg:'#edf1f8',ink:'#27364e',patternColor:'#a9b8d3',pattern:'line',graphA:'#587aa9',graphB:'#bc8ba0',titleFont:'hahmlet',bodyFont:'pretendard',photo:'square'},
+  {id:'butter',name:'Butter Notes',desc:'버터 옐로 · 메모',accent:'#bb9b53',bg:'#fffcf0',ink:'#61533d',patternColor:'#e7d9a4',pattern:'check',graphA:'#c5a14c',graphB:'#91ab86',titleFont:'gowunBatang',bodyFont:'gaegu',photo:'rounded'},
+  {id:'lilac',name:'Lilac & Lace',desc:'연보라 · 레이스 노트',accent:'#ac90b8',bg:'#fffaff',ink:'#594b60',patternColor:'#e4cee9',pattern:'gingham',graphA:'#ac90b8',graphB:'#87b7ad',titleFont:'nanumMyeongjo',bodyFont:'pretendard',photo:'arch'},
+  {id:'forest',name:'Forest Letter',desc:'포레스트 · 빈티지',accent:'#668776',bg:'#f9fbf6',ink:'#394d43',patternColor:'#c7d8c9',pattern:'paper',graphA:'#638b76',graphB:'#bc9970',titleFont:'nanumMyeongjo',bodyFont:'gowunDodum',photo:'polaroid'},
+  {id:'strawberry',name:'Strawberry Milk',desc:'딸기 우유 · 스위트',accent:'#e68ca5',bg:'#fff8fb',ink:'#684753',patternColor:'#f2c5d5',pattern:'gingham',graphA:'#e681a0',graphB:'#a6b6e8',titleFont:'gowunBatang',bodyFont:'gaegu',photo:'circle'},
+  {id:'sky',name:'Sky Letter',desc:'하늘빛 · 에어리',accent:'#89b7d1',bg:'#f9fdff',ink:'#465762',patternColor:'#c6e2ee',pattern:'star',graphA:'#7eb2d1',graphB:'#dca6bd',titleFont:'gowunBatang',bodyFont:'pretendard',photo:'arch'},
+  {id:'coffee',name:'Cafe Memoir',desc:'카페 모카 · 레트로',accent:'#a67d68',bg:'#fcf8f3',ink:'#594638',patternColor:'#dfc8b6',pattern:'paper',graphA:'#aa7c60',graphB:'#869b86',titleFont:'hahmlet',bodyFont:'pretendard',photo:'polaroid'},
+  {id:'plum',name:'Plum Noir',desc:'자두빛 · 드라마틱',accent:'#91667e',bg:'#fcf7fb',ink:'#493644',patternColor:'#d7bccf',pattern:'dot',graphA:'#91617d',graphB:'#a18fc8',titleFont:'hahmlet',bodyFont:'pretendard',photo:'rounded'}
 ];
 let events = [];
 let cropState = {target:null, src:'', x:0, y:0, scale:1, dragging:false, startX:0, startY:0};
@@ -379,7 +394,7 @@ function initFonts(){
 }
 function initThemes(){
   const grid = qs('#themeGrid');
-  grid.innerHTML = themes.map(t=>`<button type="button" class="themeChip" data-id="${t.id}"><b>${t.name}</b><span>${t.desc}</span></button>`).join('');
+  grid.innerHTML = themes.map(t=>`<button type="button" class="themeChip" data-id="${t.id}" style="--chip-bg:${t.bg};--chip-accent:${t.accent};--chip-ink:${t.ink};--chip-pattern:${t.patternColor}"><span class="themeSwatch"><i></i><i></i><i></i></span><b>${t.name}</b><span class="themeDesc">${t.desc}</span></button>`).join('');
   qsa('.themeChip').forEach(btn=>btn.addEventListener('click',()=>applyTheme(btn.dataset.id,true)));
   applyTheme('pink',true);
 }
