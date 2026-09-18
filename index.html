@@ -268,7 +268,7 @@ button.sm{padding:8px 10px;border-radius:12px;font-size:12px}
           <button id="resetAllBtn" type="button" class="ghost">전체 초기화</button>
         </div>
         <input id="loadJsonInput" type="file" accept="application/json" class="hidden">
-        <div class="help">OOC는 1,500자 이내로 생성돼. 저장 화질에서 원하는 해상도를 고른 뒤 단일 PNG 저장, 그대로 분할 저장, 4:5 비율 분할 저장을 사용할 수 있어. 그대로 분할은 세로로 긴 결과물을 위에서 아래 순서대로 나눠 저장하고, 자동 재배치 분할은 원본 디자인을 유지한 채 각 조각을 4:5 캔버스에 맞춰 배치해. 조각 내부는 테마·패턴·글꼴·색상 그대로지만, 비율에 따라 여백이 생기거나 글자가 작아질 수 있어. 분할 장수는 2장·3장·4장 중에서 선택할 수 있어. 작업 저장은 JSON 파일로 내려받아 나중에 다시 불러올 수 있어.</div>
+        <div class="help">OOC는 1,500자 이내로 생성돼. 저장 화질에서 원하는 해상도를 고른 뒤 단일 PNG 저장, 그대로 분할 저장, 자동 재배치 분할 저장을 사용할 수 있어. 그대로 분할은 세로로 긴 결과물을 위에서 아래 순서대로 나눠 저장하고, 자동 재배치 분할은 각 장을 트위터 업로드용 4:5 카드 비율로 다시 정리해서 저장해. 분할 장수는 2장·3장·4장 중에서 선택할 수 있어. 작업 저장은 JSON 파일로 내려받아 나중에 다시 불러올 수 있어.</div>
         <div id="oocOutput" class="oocBox" style="margin-top:12px">OOC 생성 버튼을 누르면 1,500자 이내 프롬프트가 만들어져요.</div>
       </section>
     </aside>
@@ -871,8 +871,19 @@ async function exportReflowSplitPNG(){
     const baseName = sanitizeLabel(safe(qs('#mainTitle').value,'관계의 변천사'));
     const pageWidth = Math.max(1200, targetWidth);
     const pageHeight = Math.round(pageWidth * 5 / 4);
+    const pad = Math.round(pageWidth * 0.05);
+    const topBand = Math.round(pageHeight * 0.13);
+    const bottomBand = Math.round(pageHeight * 0.06);
+    const frameX = pad;
+    const frameY = topBand;
+    const frameW = pageWidth - pad * 2;
+    const frameH = pageHeight - topBand - bottomBand - pad;
     const sliceHeight = Math.ceil(canvas.height / splitCount);
     const bg = qs('#sheetBg').value;
+    const accent = qs('#accent').value;
+    const ink = qs('#ink').value;
+    const relationType = safe(qs('#relationType').value, '관계 기록');
+    const title = safe(qs('#mainTitle').value, '관계의 변천사');
 
     for(let i = 0; i < splitCount; i++){
       const startY = i * sliceHeight;
@@ -883,12 +894,49 @@ async function exportReflowSplitPNG(){
       page.width = pageWidth;
       page.height = pageHeight;
       const ctx = page.getContext('2d');
-      // Keep the original theme exactly within the exported sheet: its pattern,
-      // fonts, colors, photo shapes and decoration are all from renderSheetCanvas.
-      // Only the surrounding 4:5 letterbox uses the user's selected sheet color.
       ctx.fillStyle = bg;
-      ctx.fillRect(0, 0, pageWidth, pageHeight);
-      drawFittedSlice(ctx, canvas, startY, srcHeight, 0, 0, pageWidth, pageHeight);
+      ctx.fillRect(0,0,pageWidth,pageHeight);
+
+      ctx.strokeStyle = accent;
+      ctx.lineWidth = Math.max(2, Math.round(pageWidth * 0.0015));
+      ctx.strokeRect(pad*0.55, pad*0.55, pageWidth - pad*1.1, pageHeight - pad*1.1);
+
+      ctx.fillStyle = accent;
+      ctx.textAlign = 'left';
+
+      ctx.fillStyle = ink;
+      ctx.font = `700 ${Math.round(pageWidth*0.04)}px Pretendard, sans-serif`;
+      ctx.fillText(title, pad, Math.round(pageHeight*0.093));
+
+      ctx.textAlign = 'right';
+      ctx.fillStyle = accent;
+      ctx.font = `600 ${Math.round(pageWidth*0.024)}px Pretendard, sans-serif`;
+      ctx.fillText(`${i+1} / ${splitCount}`, pageWidth - pad, Math.round(pageHeight*0.088));
+
+      ctx.textAlign = 'left';
+      ctx.fillStyle = ink;
+      ctx.font = `500 ${Math.round(pageWidth*0.022)}px Pretendard, sans-serif`;
+      ctx.fillText(relationType, pad, Math.round(pageHeight*0.118));
+
+      ctx.save();
+      ctx.shadowColor = 'rgba(0,0,0,0.08)';
+      ctx.shadowBlur = Math.round(pageWidth * 0.018);
+      ctx.shadowOffsetY = Math.round(pageWidth * 0.008);
+      ctx.fillStyle = '#ffffff';
+      roundedRect(ctx, frameX, frameY, frameW, frameH, Math.round(pageWidth*0.02));
+      ctx.fill();
+      ctx.restore();
+
+      ctx.save();
+      roundedRect(ctx, frameX, frameY, frameW, frameH, Math.round(pageWidth*0.02));
+      ctx.clip();
+      drawFittedSlice(ctx, canvas, startY, srcHeight, frameX, frameY, frameW, frameH);
+      ctx.restore();
+
+      ctx.strokeStyle = accent;
+      ctx.lineWidth = Math.max(2, Math.round(pageWidth * 0.0013));
+      roundedRect(ctx, frameX, frameY, frameW, frameH, Math.round(pageWidth*0.02));
+      ctx.stroke();
 
       const blob = await canvasToBlob(page);
       if(!blob) throw new Error(`${i+1}번째 자동 재배치 이미지를 만들지 못했어.`);
@@ -898,7 +946,7 @@ async function exportReflowSplitPNG(){
     }
   }catch(err){
     console.error('Reflow split export failed:', err);
-    alert('4:5 비율 분할 저장 중 문제가 발생했어. ' + (err?.message || '브라우저를 새로고침하고 다시 시도해 줘.'));
+    alert('자동 재배치 분할 저장 중 문제가 발생했어. ' + (err?.message || '브라우저를 새로고침하고 다시 시도해 줘.'));
   }finally{
     button.disabled = false; button.textContent = prior;
     updateSplitButtonLabels();
