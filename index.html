@@ -242,9 +242,8 @@ button.sm{padding:8px 10px;border-radius:12px;font-size:12px}
           <button id="resetAllBtn" type="button" class="ghost">전체 초기화</button>
         </div>
         <input id="loadJsonInput" type="file" accept="application/json" class="hidden">
-        <div class="help">PNG 저장은 오른쪽 미리보기를 그대로 고화질로 저장해. 작업 저장은 JSON 파일로 내려받아 나중에 다시 불러올 수 있어.</div>
-        <div id="oocOutput" class="oocBox" style="margin-top:12px">ooc: 롤플레잉 중단. 새로운 에피소드 시작.
-아직 OOC가 생성되지 않았습니다.</div>
+        <div class="help">OOC는 1,500자 이내로 생성돼. PNG 저장은 오른쪽 미리보기를 그대로 고화질로 저장해. 작업 저장은 JSON 파일로 내려받아 나중에 다시 불러올 수 있어.</div>
+        <div id="oocOutput" class="oocBox" style="margin-top:12px">OOC 생성 버튼을 누르면 1,500자 이내 프롬프트가 만들어져요.</div>
       </section>
     </aside>
 
@@ -652,54 +651,19 @@ function download(name, blob){ const a=document.createElement('a'); a.href=URL.c
 
 function makeOOC(){
   const a = safe(qs('#aName').value,'A'), b = safe(qs('#bName').value,'B');
-  const relationType = safe(qs('#relationType').value,'자유 관계');
-  const metricList = metricNames();
-  const title = safe(qs('#mainTitle').value,'관계의 변천사'); const eng = safe(qs('#engTitle').value,'The Story of Us');
-  const eventLines = events.map((ev,idx)=>{
-    const aVals = metricList.map((m,i)=>`${m} ${ev.a?.[i]??0}`).join(', ');
-    const bVals = metricList.map((m,i)=>`${m} ${ev.b?.[i]??0}`).join(', ');
-    return `${idx+1}. 사건명: ${safe(ev.name,'')}
-   시점: ${safe(ev.time,'')}
-   설명: ${safe(ev.desc,'')}
-   감정 한 줄: ${safe(ev.mood,'')}
-   ${a}→${b}: ${aVals}
-   ${b}→${a}: ${bVals}`;
-  }).join('\n');
-  const ooc = `ooc: 롤플레잉 중단. 새로운 에피소드 시작.
-다음은 DEARLY — 관계의 변천사 제작기를 채우기 위한 참고용 정리입니다. 제작기에 그대로 옮겨적는 형식이 아니라, 두 사람의 관계 흐름을 이해하고 제목/문구/사건 설명/감정 변화를 구성할 수 있도록 서술해 주세요.
-
-[기본 정보]
-- 관계 유형: ${relationType}
-- A 이름: ${a}
-- B 이름: ${b}
-- 관계명: ${safe(qs('#relationLabel').value,'')}
-- 함께한 기간: ${safe(qs('#period').value,'')}
-
-[완성본 텍스트 제안]
-- 메인 제목 제안: ${title}
-- 영문 부제 제안: ${eng}
-- 상단 문구 제안: ${safe(qs('#introText').value,'')}
-- 하단 문구 제안: ${safe(qs('#footerText').value,'')}
-
-[사용 감정/관계 항목]
-- ${metricList.join(', ')}
-
-[사건 타임라인]
-${eventLines}
-
-[요약 섹션]
-- 관계의 전환점: ${safe(qs('#turningPoint').value,'')}
-- 가장 크게 변한 것: ${safe(qs('#biggestChange').value,'')}
-- 지금, 우리는: ${safe(qs('#currentState').value,'')}
-- 앞으로의 방향: ${safe(qs('#futureWish').value,'')}
-
-위 내용을 바탕으로 다음을 자세히 정리해 주세요.
-1) 두 사람의 관계를 가장 잘 설명하는 메인 제목과 영문 부제 3안
-2) 상단 문구 3안과 하단 문구 3안
-3) 각 사건이 관계에 미친 의미와 감정 변화 해설
-4) 각 감정 항목이 왜 그런 수치인지에 대한 짧은 근거
-5) 최종적으로 '지금, ${a}${eunNeun(a)} ${b}에게 어떤 존재인지', '${b}${eunNeun(b)} ${a}에게 어떤 존재인지'에 대한 요약`;
-  qs('#oocOutput').textContent = ooc;
+  const type = safe(qs('#relationType').value,'자유 관계');
+  const relation = safe(qs('#relationLabel').value,'미정');
+  const period = safe(qs('#period').value,'미정');
+  const metrics = metricNames().join('·');
+  const prompt = `[OOC: 롤플레잉 중단. 새로운 에피소드 시작. 지금까지의 대화와 설정만 근거로 DEARLY 「관계의 변천사」 제작기에 입력할 내용을 작성하라. 연애를 전제하지 말고 실제 관계에 맞춰라.
+대상: ${a} / ${b}; 관계 유형: ${type}; 관계명: ${relation}; 기간: ${period}.
+1. 메인 제목, 영문 부제, 상단 한 줄, 하단 한 줄을 각각 1개 작성.
+2. 두 사람의 첫 만남부터 현재까지 중요한 사건 ${events.length}개를 시간순으로 정리. 각 사건마다 제목·시점·간결한 설명·감정 한 줄을 작성.
+3. 각 사건의 ${a}→${b}, ${b}→${a} 감정 수치(0~100)를 각각 제시. 항목: ${metrics}. 수치 변화의 근거를 사건과 연결해 설명.
+4. 관계의 전환점, 가장 크게 변한 것, 현재 관계, 앞으로의 방향을 각각 한 문장으로 정리.
+5. 인물의 실제 말투와 관계의 복잡성을 유지하고, 확인되지 않은 사건·날짜·감정은 창작하지 말고 '정보 부족'으로 표시. 추측과 확인된 사실을 구분. 제작기 입력용으로 항목별 구분하여 간결하게 출력.]`;
+  // User-defined names and labels can be arbitrarily long. Keep the final copied prompt within 1,500 characters.
+  qs('#oocOutput').textContent = prompt.length <= 1500 ? prompt : prompt.slice(0,1499) + ']';
 }
 
 async function exportPNG(){
