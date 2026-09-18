@@ -681,10 +681,59 @@ function makeOOC(){
   qs('#oocOutput').textContent = prompt.length <= 1500 ? prompt : prompt.slice(0,1499) + ']';
 }
 
+// html2canvas 1.4.1 cannot parse modern CSS color-mix(). Replace those colors
+// in its isolated clone, leaving the live theme and editable colors untouched.
+function exportCompatibleCSS(css, sheet){
+  const style = getComputedStyle(sheet);
+  function rgb(hex){
+    hex = (hex||'').trim().replace('#','');
+    if(hex.length===3) hex=hex.split('').map(c=>c+c).join('');
+    if(!/^[0-9a-fA-F]{6}$/.test(hex)) return [215,140,166];
+    return [0,2,4].map(i=>parseInt(hex.slice(i,i+2),16));
+  }
+  return css.replace(/color-mix\(in srgb,\s*var\((--[\w-]+)\)\s+(\d+(?:\.\d+)?)%,\s*(white|transparent)\s*\)/g,(_,key,pct,other)=>{
+    const v=style.getPropertyValue(key).trim() || (key==='--pattern-color'?qs('#patternColor').value:qs('#accent').value);
+    const c=rgb(v),t=Number(pct)/100;
+    if(other==='transparent') return `rgba(${c.join(',')},${t})`;
+    return `rgb(${c.map(ch=>Math.round(ch*t+255*(1-t))).join(',')})`;
+  });
+}
 async function exportPNG(){
-  const sheet = qs('#sheet');
-  const canvas = await html2canvas(sheet,{backgroundColor:null,scale:2,useCORS:true,allowTaint:true});
-  canvas.toBlob(blob=> download(`DEARLY — ${safe(qs('#mainTitle').value,'관계의 변천사')}.png`, blob));
+  const button=qs('#savePngBtn'), prior=button.textContent;
+  if(button.disabled) return;
+  button.disabled=true; button.textContent='PNG 저장 중…';
+  try{
+    const sheet=qs('#sheet');
+    if(typeof html2canvas!=='function') throw new Error('이미지 저장 라이브러리를 불러오지 못했어. 인터넷 연결을 확인하고 다시 시도해 줘.');
+    if(document.fonts?.ready) await document.fonts.ready;
+    const width=sheet.offsetWidth, height=sheet.scrollHeight;
+    if(!width||!height) throw new Error('미리보기 크기를 읽지 못했어.');
+    // Adapt the resolution for long timelines to stay below canvas memory limits.
+    const scale=Math.min(2.5, Math.sqrt(19000000/(width*height)));
+    const canvas=await html2canvas(sheet,{
+      backgroundColor:qs('#sheetBg').value,scale,useCORS:true,allowTaint:false,
+      width,height,scrollX:0,scrollY:0,windowWidth:Math.max(document.documentElement.clientWidth,1200),
+      onclone(doc){
+        const clone=doc.getElementById('sheet');
+        const css=doc.querySelector('style');
+        if(css) css.textContent=exportCompatibleCSS(css.textContent,sheet);
+        clone.style.width=width+'px';
+        clone.style.height='auto';
+        clone.style.minHeight=height+'px';
+        // CSS viewport media rules must not squeeze the export layout.
+        clone.style.maxWidth='none';
+      }
+    });
+    const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
+    if(!blob) throw new Error('PNG 파일 변환에 실패했어.');
+    const name=safe(qs('#mainTitle').value,'관계의 변천사').replace(/[\\/:*?"<>|]/g,'_');
+    download(`DEARLY — ${name}.png`,blob);
+  }catch(err){
+    console.error('PNG export failed:',err);
+    alert('PNG 저장 중 문제가 발생했어. '+(err?.message||'브라우저를 새로고침하고 다시 시도해 줘.'));
+  }finally{
+    button.disabled=false; button.textContent=prior;
+  }
 }
 
 function init(){
